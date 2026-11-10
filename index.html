@@ -1476,7 +1476,7 @@ $("aLida").onclick = () => { const k = ETAPAS[aulaAtual][5]; if (PR.lidas[k]) { 
 $("aulaVoltar").onclick = () => go("trilha");
 $("aQuiz").onclick = () => {
   const k = ETAPAS[aulaAtual][5], ix = PERGUNTAS.map((p, n) => p.aula === k ? n : -1).filter(n => n >= 0);
-  if (!ix.length) return toast("Quiz desta aula entra no site final.");
+  if (!ix.length) return toast("Esta aula ainda não tem perguntas.");
   comecar(ix);
 };
 $("aNota").onclick = () => { go("notas"); $("nTitulo").value = ETAPAS[aulaAtual][0] + ": resumo"; $("nTexto").focus(); };

@@ -298,10 +298,9 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
 <body>
 
 <div class="wrap">
-  <div class="aviso">Mock para aprovação. Perguntas, notas e números são exemplos.</div>
   <div class="top">
     <div class="marca"><i>&lt;/&gt;</i> Apoio de Estudos</div>
-    <div class="status"><span class="pill">Nível <b>3</b> · 1.240 XP</span><span class="pill">Sequência <b>5 dias</b></span></div>
+    <div class="status"><span class="pill" id="pNivel">Nível <b>1</b> · 0 XP</span><span class="pill" id="pSeq">Sequência <b>0 dias</b></span></div>
   </div>
 
   <!-- HOJE -->
@@ -324,20 +323,9 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     <div class="grid2">
       <div>
         <h2 class="sec">Meta de hoje</h2>
-        <div class="card meta" style="display:block" id="metas">
-          <label><input type="checkbox" checked> Fazer 1 rodada de treino</label>
-          <label><input type="checkbox"> Ler a aula "Java e JVM"</label>
-          <label><input type="checkbox"> Revisar 2 anotações</label>
-        </div>
-      </div>
-      <div>
-        <h2 class="sec">Seus pontos fracos</h2>
+        \1</div>\n      </div>\n      <div>\n        <h2 class="sec">Seus pontos fracos</h2>
         <div class="card">
-          <ul class="limpa">
-            <li class="row" style="border:0;padding-top:0"><span>JPA: LAZY e EAGER</span><div class="barra"><i style="width:38%;background:var(--hot)"></i></div><span class="pct">38%</span></li>
-            <li class="row"><span>Status HTTP</span><div class="barra"><i style="width:52%;background:var(--hot)"></i></div><span class="pct">52%</span></li>
-            <li class="row"><span>SOLID</span><div class="barra"><i style="width:55%;background:var(--hot)"></i></div><span class="pct">55%</span></li>
-          </ul>
+          <ul class="limpa" id="fracos"></ul>
           <button class="btn p sm" id="treinarFracos" style="margin-top:8px">Treinar só os meus erros</button>
         </div>
       </div>
@@ -387,7 +375,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     <div id="aTermosBox" hidden><h2 class="sec">Palavras e siglas desta aula</h2><div class="termos" id="aTermos"></div></div>
     <h2 class="sec">O que guardar</h2>
     <ul class="pontos" id="aPontos"></ul>
-    <div class="acoes" style="margin-top:20px"><button class="btn" id="aNota">Anotar com minhas palavras</button><button class="btn p" id="aQuiz">Fazer o quiz desta aula</button></div>
+    <div class="acoes" style="margin-top:20px"><button class="btn" id="aLida">Marcar como estudada</button><button class="btn" id="aNota">Anotar com minhas palavras</button><button class="btn p" id="aQuiz">Fazer o quiz desta aula</button></div>
   </main>
 
   <!-- QUIZ -->
@@ -505,7 +493,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
           <div class="foco" id="foco">25:00</div>
           <div class="ctl"><button class="btn p sm" id="fIni">Iniciar</button><button class="btn sm" id="fRes">Zerar</button><span class="muted" style="font-size:13px">25 min de estudo, 5 de pausa</span></div>
         </div>
-        <div class="card"><h2 style="font-size:20px;margin-bottom:6px">Revisar hoje</h2><p class="muted" style="margin:0;font-size:14.5px">Duas anotações voltam hoje pela repetição espaçada (1, 3 e 7 dias).</p></div>
+        <div class="card"><h2 style="font-size:20px;margin-bottom:6px">Revisar hoje</h2><p class="muted" style="margin:0;font-size:14.5px" id="revHoje">Anotações voltam para revisão depois de 1, 3 e 7 dias (repetição espaçada).</p></div>
       </div>
     </div>
     <h2 class="sec">Minhas anotações</h2>
@@ -516,26 +504,22 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
   <main class="view" id="v-evolucao" hidden>
     <h1 style="font-size:32px">Sua evolução</h1>
     <div class="stats" style="margin-top:14px">
-      <div class="card stat"><b>66%</b><span>acerto geral</span></div>
-      <div class="card stat"><b>4h 20</b><span>estudo na semana</span></div>
-      <div class="card stat"><b>128</b><span>perguntas feitas</span></div>
-      <div class="card stat"><b>5</b><span>dias seguidos</span></div>
+      <div class="card stat"><b id="sAcerto">–</b><span>acerto geral</span></div>
+      <div class="card stat"><b id="sTempo">0 min</b><span>estudo na semana</span></div>
+      <div class="card stat"><b id="sFeitas">0</b><span>perguntas feitas</span></div>
+      <div class="card stat"><b id="sSeq">0</b><span>dias seguidos</span></div>
     </div>
     <div class="grid2" style="margin-top:14px">
       <div class="card"><h2 style="font-size:20px;margin-bottom:8px">Acerto por semana</h2>
-        <svg class="graf" viewBox="0 0 320 170" role="img" aria-label="Acerto geral subiu de 42% para 66% em 8 semanas" id="graf"></svg></div>
+        <svg class="graf" viewBox="0 0 320 170" role="img" aria-label="Acerto por semana" id="graf"></svg></div>
       <div class="card"><h2 style="font-size:20px;margin-bottom:6px">Diagnóstico</h2>
-        <p style="margin:0 0 10px"><b>Você erra mais por confundir conceitos parecidos</b> (LAZY e EAGER, 400 e 404), e menos por falta de leitura.</p>
-        <p class="muted" style="margin:0 0 10px;font-size:14.5px">Próximo passo: ver a aula animada de JPA e fazer 5 perguntas só sobre isso. Revisão marcada para amanhã, depois 3 e 7 dias.</p>
-        <button class="btn p sm" id="evTreinar">Treinar agora</button></div>
+        <p style="margin:0 0 10px" id="dgTxt"></p>
+        <p class="muted" style="margin:0 0 10px;font-size:14.5px" id="dgSub"></p>
+        <button class="btn p sm" id="evTreinar">Treinar meus erros</button></div>
     </div>
     <div class="grid2" style="margin-top:14px">
       <div><h2 class="sec" style="margin-top:14px">Metas da semana</h2>
-        <div class="card">
-          <div class="meta-i" style="border:0;padding-top:0"><span><b>5 rodadas na semana</b><b>3/5</b></span><div class="barra"><i style="width:60%;--c:var(--n1)"></i></div></div>
-          <div class="meta-i"><span><b>Concluir "Laços de repetição" até sexta</b><b>60%</b></span><div class="barra"><i style="width:60%;--c:var(--n2)"></i></div></div>
-          <div class="meta-i"><span><b>Explicar encapsulamento sem olhar</b><b>0/1</b></span><div class="barra"><i style="width:0%"></i></div></div>
-        </div></div>
+        <div class="card" id="metasSem"></div></div>
       <div><h2 class="sec" style="margin-top:14px">Minhas dificuldades</h2>
         <div class="card"><div id="difLista"></div>
           <form id="difForm" class="envio" style="margin-top:10px"><input id="difT" type="text" placeholder="Ex.: não entendo interface x classe abstrata" required><button class="btn p sm" type="submit">Adicionar</button></form>
@@ -543,6 +527,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     </div>
     <h2 class="sec">Acerto por etapa</h2>
     <div class="card"><ul class="limpa" id="evEtapas"></ul></div>
+    <div class="card" style="margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="muted" style="flex:1;min-width:200px;font-size:14.5px">Seu progresso fica salvo só neste aparelho. Quer começar de novo?</span><button class="btn sm" id="zerar">Recomeçar do zero</button></div>
     <h2 class="sec">Métodos de estudo que o app usa</h2>
     <div class="metodos">
       <div class="card metodo"><h3>Recuperação ativa</h3><p>Responder antes de reler fixa mais do que só ler.</p><small>No app: quiz antes da aula.</small></div>
@@ -578,6 +563,44 @@ let toastT;
 function toast(m) { const t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
 function guarda(k, v) { try { v === undefined ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function le(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+
+/* ---------- progresso do aluno (começa zerado em cada aparelho) ---------- */
+const VER = 3;
+(function () { if (le("ver", 0) !== VER) { ["vistas", "notas", "dif", "carreira", "prog"].forEach(k => guarda(k, undefined)); guarda("ver", VER); } })();
+const fmtData = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const hojeStr = () => fmtData(new Date());
+const diasEntre = (a, b) => Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000);
+let PR = Object.assign({ resp: {}, rod: [], lidas: {}, dias: [], min: {}, pend: [] }, le("prog", {}));
+const salvaPR = () => guarda("prog", PR);
+function marcaDia() { const h = hojeStr(); if (!PR.dias.includes(h)) PR.dias.push(h); }
+function sequencia() { const set = new Set(PR.dias), d = new Date(); if (!set.has(fmtData(d))) d.setDate(d.getDate() - 1); let n = 0; while (set.has(fmtData(d))) { n++; d.setDate(d.getDate() - 1); } return n; }
+function totais() { let a = 0, t = 0; Object.values(PR.resp).forEach(r => { a += r[0]; t += r[0] + r[1]; }); return [a, t]; }
+function xp() { return totais()[0] * 10 + Object.keys(PR.lidas).length * 20; }
+function minutosSemana() { const h = hojeStr(); return Math.round(Object.entries(PR.min).filter(([d]) => diasEntre(d, h) >= 0 && diasEntre(d, h) < 7).reduce((x, [, m]) => x + m, 0)); }
+function temaStats() {
+  const m = {}; Object.entries(PR.resp).forEach(([i, r]) => { const p = PERGUNTAS[i]; if (!p) return; const o = (m[p.tema] ||= [0, 0]); o[0] += r[0]; o[1] += r[0] + r[1]; });
+  return Object.entries(m).map(([tema, [a, t]]) => ({ tema, a, t, pct: Math.round(a / t * 100) })).sort((x, y) => x.pct - y.pct);
+}
+function pctEtapa(e) {
+  const k = e[5], lida = PR.lidas[k] ? 50 : 0, qs = PERGUNTAS.map((p, i) => p.aula === k ? i : -1).filter(i => i >= 0);
+  if (!qs.length) return lida ? 100 : 0;
+  return Math.round(lida + 50 * qs.filter(i => PR.resp[i] && PR.resp[i][0] > 0).length / qs.length);
+}
+function calcEtapas() {
+  ETAPAS.forEach(e => { e[4] = pctEtapa(e); e[3] = e[4] >= 80 ? "feita" : ""; });
+  const a = ETAPAS.find(e => e[3] !== "feita"); if (a) a[3] = "atual";
+}
+function registra(pergs, resp, seg) {
+  const h = hojeStr(); let ac = 0;
+  pergs.forEach((p, k) => {
+    const r = (PR.resp[p.idx] ||= [0, 0]); const ok = resp[k].ok;
+    ok ? r[0]++ : r[1]++; if (ok) ac++;
+    PR.pend = PR.pend.filter(i => i !== p.idx); if (!ok) PR.pend.push(p.idx);
+  });
+  PR.rod.push({ d: h, ac, n: pergs.length, modo: modo });
+  PR.min[h] = (PR.min[h] || 0) + Math.min(seg, 1800) / 60;
+  marcaDia(); salvaPR();
+}
 
 const KW = new Set("public private protected class interface extends implements abstract static final void int double boolean long float char byte short new return if else switch case default for while do break continue try catch finally throw throws import package this super null true false instanceof enum var".split(" "));
 const SQLKW = new Set("SELECT FROM WHERE INSERT INTO VALUES UPDATE SET DELETE CREATE TABLE PRIMARY KEY NOT NULL AND OR ORDER BY GROUP JOIN INNER LEFT ON AS LIMIT UNIQUE REFERENCES FOREIGN DEFAULT INDEX BIGINT VARCHAR INT TEXT BOOLEAN RUN COPY EXPOSE CMD ENTRYPOINT WORKDIR ENV".split(" "));
@@ -623,17 +646,22 @@ const MODULOS = [
     ["Spring Boot e JPA", "Beans, Hibernate, LAZY e EAGER", "", 38, "lazy"],
     ["Pedidos e entregas", "Etapas, snapshot, entrega agendada, cancelamento", "", 33, "ped"],
     ["Testes", "Unitários e de integração", "", 29, "test"] ] },
+  { n: "Por baixo dos panos", nv: "n3", niv: "Avançado", it: [
+    ["Da URL à resposta", "O que acontece quando você abre um site: DNS, TCP, HTTPS, servidor e banco", "", 0, "url"],
+    ["O que o Spring faz ao iniciar", "Do main() até a API pronta: beans, Tomcat, Flyway", "", 0, "boot"],
+    ["Memória, threads e conexões", "Stack, heap, thread por pedido, pool de conexões", "", 0, "mem"],
+    ["Banco por dentro", "Transação, ACID, índice, plano de execução e lock", "", 0, "bdint"] ] },
   { n: "Nível profissional", nv: "n3", niv: "Avançado", it: [
     ["SOLID e padrões de projeto", "Como times experientes organizam o código", "", 55, "solid"],
     ["Segurança", "Autenticação, senhas, boas práticas", "", 0, "seg"],
     ["Desempenho", "Consultas lentas, cache, N+1", "", 0, "desemp"],
+    ["Medir o desempenho", "Como saber se a aplicação está rápida: métricas, ferramentas e teste de carga", "", 0, "medir"],
     ["Infraestrutura", "Docker, deploy, CI/CD", "", 0, "infra"] ] },
   { n: "Primeiro emprego", nv: "n4", niv: "Carreira", it: [
     ["Primeira vaga dev", "Currículo, GitHub, entrevista, soft skills", "", 0, "vaga"],
     ["IA a seu favor", "Prompts bons e uso consciente", "", 0, "ia"] ] }
 ];
 const ETAPAS = MODULOS.flatMap(m => m.it.map(i => [i[0], i[1], m.nv, i[2], i[3], i[4], m.n]));
-(function () { const a = ETAPAS.findIndex(e => e[3] === "atual"); $("atualNome").textContent = `${ETAPAS[a][0]} (etapa ${a + 1} de ${ETAPAS.length})`; })();
 
 const TRACES = {
   soma: { titulo: "Passo a passo: somar de 1 a 4", linhas: ["int soma = 0;", "for (int i = 1; i <= 4; i++) {", "    soma = soma + i;", "}", "System.out.println(soma);"],
@@ -1079,6 +1107,106 @@ Object.assign(MAIS, {
     termos: [["Prompt", "O pedido (texto) que você escreve para a IA."], ["Prompt engineering", "Técnica de escrever pedidos que dão melhores respostas."], ["Context", "Contexto: as informações que a IA tem sobre a sua situação."], ["Constraint", "Limite: o que a IA não deve fazer."], ["Hallucination", "Alucinação: a IA inventa algo que parece verdade, como uma função que não existe."], ["Few-shot", "Dar alguns exemplos no pedido para a IA imitar o formato."], ["Iteration", "Iterar: melhorar o resultado em pequenos passos repetidos."], ["Token (IA)", "Pedaço de texto que a IA processa. Conversas muito longas perdem detalhes."], ["Context window", "Janela de contexto: quanto a IA consegue 'lembrar' na mesma conversa."], ["Skill", "Habilidade: algo que você desenvolve com treino."], ["Review", "Revisão: ler e avaliar criticamente o que foi feito."], ["Documentation", "Documentação oficial: a fonte mais confiável sobre uma tecnologia."], ["Rubber duck debugging", "Explicar o problema em voz alta para achar a solução, até para um patinho de borracha."]],
     pontos: ["Pense antes de pedir: objetivo claro e como saber que deu certo.", "Pedido bom: objetivo, contexto, limites, formato e conferência.", "Peça o plano antes do código e trabalhe em passos pequenos.", "A IA pode errar com confiança: leia, rode, teste e pergunte o porquê.", "Nunca cole senhas, chaves ou dados de clientes."] }
 });
+FLOWS.medir = { titulo: "O ciclo de medir desempenho", nos: [["Meta", "ex.: 95% em até 300 ms"], ["Medir", "tempo, erros, CPU"], ["Achar o gargalo", "logs, profiler, EXPLAIN"], ["Mudar 1 coisa", "uma de cada vez"], ["Medir de novo", "melhorou?"]],
+  passos: [
+    [0, "Defina o que é \"rápido o suficiente\" para o seu caso, por exemplo: <b>95% das respostas em até 300 ms</b>. Sem meta, não dá para saber se deu certo."],
+    [1, "<b>Meça</b> com a aplicação funcionando e com carga parecida com a real: tempo de resposta, taxa de erro, CPU e memória."],
+    [2, "Procure o <b>gargalo</b>: olhe o tempo de cada parte (banco, rede, código), conte os SELECTs e use o profiler."],
+    [3, "Mude <b>só uma coisa</b> por vez (um índice, um JOIN FETCH, um cache). Se mudar várias, você não sabe o que ajudou."],
+    [4, "<b>Meça de novo</b> do mesmo jeito e compare com o antes. Melhorou? Fique. Piorou ou igual? Desfaça.", "volta"] ] };
+FLOWS.url = { titulo: "O que acontece ao abrir um endereço", nos: [["Navegador", "você digita a URL"], ["DNS", "descobre o IP"], ["TCP + TLS", "conexão segura"], ["Servidor", "Tomcat e Spring"], ["Banco", "dados"], ["Resposta", "volta ao navegador"]],
+  passos: [
+    [0, "Você digita <b>https://meusite.com/clientes/1</b>. O navegador separa: protocolo (https), domínio (meusite.com) e caminho (/clientes/1)."],
+    [1, "O <b>DNS</b> (Domain Name System) é a \"lista telefônica\" da internet: transforma <b>meusite.com</b> em um endereço IP, como 203.0.113.10."],
+    [2, "O navegador abre uma conexão <b>TCP</b> com esse IP (um aperto de mãos para combinar a conversa) e, no HTTPS, o <b>TLS</b> cria a criptografia (o cadeado)."],
+    [3, "O pedido <b>GET /clientes/1</b> chega ao servidor. O Tomcat entrega para uma <b>thread</b>, e o Spring encaminha ao Controller, depois ao Service."],
+    [4, "O Repository pega uma <b>conexão do pool</b> e faz o SELECT no banco. O banco devolve a linha."],
+    [5, "O Spring transforma o resultado em <b>JSON</b>, monta a resposta <b>200 OK</b> e ela volta pelo mesmo caminho até o navegador.", "volta"] ] };
+FLOWS.boot = { titulo: "A API ligando, passo a passo", nos: [["main()", "SpringApplication.run"], ["Escaneamento", "acha @Component"], ["Beans", "cria e liga os objetos"], ["Flyway", "migrations do banco"], ["Tomcat", "abre a porta 8080"], ["Pronta", "recebe pedidos"]],
+  passos: [
+    [0, "Você roda o programa. O Java chama o <b>main()</b>, que chama <b>SpringApplication.run</b>. Tudo começa aqui."],
+    [1, "O Spring <b>escaneia</b> o pacote atrás de classes marcadas com @Controller, @Service, @Repository, @Component e @Configuration."],
+    [2, "Ele <b>cria um objeto de cada</b> (os beans) e liga uns aos outros: se o Service precisa do Repository, o Spring entrega (injeção de dependência)."],
+    [3, "O <b>Flyway</b> confere o banco e roda as migrations que faltam. Se o banco não bate com as entidades, o JPA avisa e a aplicação não sobe.", "erro"],
+    [4, "O <b>Tomcat</b> embutido abre a porta (8080) e fica ouvindo."],
+    [5, "Aparece no log <b>Started ClientesApplication</b>. Agora a API aceita pedidos."] ] };
+FLOWS.mem = { titulo: "Um pedido usando memória, thread e conexão", nos: [["Pedido chega", "ex.: GET /clientes"], ["Thread do pool", "1 por pedido"], ["Stack", "variáveis locais"], ["Heap", "objetos"], ["Conexão do pool", "para o banco"]],
+  passos: [
+    [0, "Chega um pedido. O servidor não cria uma thread do zero: ele <b>reaproveita uma do pool</b> (por padrão, até 200 no Tomcat)."],
+    [1, "Uma <b>thread</b> é uma linha de execução. Ela cuida desse pedido do começo ao fim. Outros pedidos ao mesmo tempo usam outras threads."],
+    [2, "Cada thread tem sua <b>stack</b> (pilha): guarda as variáveis locais e a ordem das chamadas de método. É rápida e pequena."],
+    [3, "Os objetos (new Cliente(...)) ficam no <b>heap</b>, memória compartilhada por todas as threads. O Garbage Collector limpa o que ninguém usa mais."],
+    [4, "Para falar com o banco, a thread <b>pega emprestada uma conexão do pool</b> (o Hikari, com 10 por padrão) e devolve ao terminar."],
+    [4, "Se as 10 conexões estiverem ocupadas, a thread <b>espera na fila</b>. Muita espera vira lentidão e depois erro 500 ou 503.", "erro"] ] };
+FLOWS.bdint = { titulo: "Uma transação: tudo ou nada", nos: [["BEGIN", "abre a transação"], ["Debita R$ 100", "conta A"], ["Credita R$ 100", "conta B"], ["COMMIT", "confirma tudo"], ["ROLLBACK", "desfaz tudo"]],
+  passos: [
+    [0, "A transação começa. A partir daqui, as mudanças ainda <b>não valem para os outros</b>."],
+    [1, "O sistema <b>debita R$ 100</b> da conta A."],
+    [2, "Agora <b>credita R$ 100</b> na conta B. E se a luz acabar entre o passo 1 e o 2? Sem transação, o dinheiro sumiria."],
+    [3, "Deu tudo certo: o <b>COMMIT</b> confirma as duas mudanças juntas, e passam a valer para todos."],
+    [4, "Deu erro no meio? O <b>ROLLBACK</b> desfaz tudo e as contas voltam ao que eram. É o <b>A</b> de ACID: atomicidade, tudo ou nada.", "erro"] ] };
+
+Object.assign(MAIS, {
+  medir: { resumo: "Como saber se a sua aplicação está rápida: o que medir (latência, throughput, erros), com quais ferramentas e como testar com carga.", flow: "medir", texto: [
+    `Para saber se uma aplicação é performática (rápida o bastante), você precisa de números, não de sensação. O "parece lento" não ajuda a ninguém. O primeiro passo é definir uma meta e depois medir. Uma meta comum é: "95% das respostas em até 300 milissegundos e menos de 1% de erros".`,
+    `Aprenda as métricas principais. Latência (latency) é o tempo que um pedido leva para ser respondido. Em vez da média, os times olham o percentil: o p95 é o tempo que 95% dos pedidos conseguem cumprir; o p99 mostra os piores casos, que são os que o usuário mais sente. Throughput (vazão) é quantos pedidos o sistema atende por segundo. Taxa de erros é a porcentagem de respostas 5xx. E há o uso de recursos: CPU, memória e conexões do banco.`,
+    `Comece medindo o simples. No navegador, a aba Network (DevTools) mostra o tempo de cada pedido e o quanto foi gasto esperando o servidor. No terminal, o curl com a opção -w mostra o tempo total. No Spring, ligue spring.jpa.show-sql=true para contar quantos SELECTs cada chamada faz. Depois use o Spring Boot Actuator, uma biblioteca que expõe endereços como /actuator/health (a aplicação está viva?) e /actuator/metrics (tempos, memória, threads, conexões).`,
+    `Para saber como o sistema se comporta com muitos usuários, faça um teste de carga (load test) com ferramentas como k6 ou JMeter: elas simulam, por exemplo, 50 usuários ao mesmo tempo por 1 minuto e mostram p95, throughput e erros. Para achar onde o tempo é gasto dentro do Java, use um profiler (como o Java Flight Recorder ou o VisualVM). E para consultas lentas, o PostgreSQL tem o EXPLAIN ANALYZE, que mostra o plano de execução e o tempo real de cada parte.`,
+    `Cuidado com os erros clássicos: medir uma vez só (varia muito; repita e use a mediana), medir o computador de casa e achar que vale para produção, testar com 10 linhas no banco (com 1 milhão o resultado muda), mudar várias coisas de uma vez, e otimizar o que não é gargalo. Resumindo o ciclo: meta, medir, achar o gargalo, mudar uma coisa, medir de novo.`],
+    codigos: [["Terminal (curl)", `# tempo total de uma chamada, em segundos\ncurl -s -o /dev/null -w "total: %{time_total}s\\nstatus: %{http_code}\\n" http://localhost:8080/clientes\n\n# repete 5 vezes para ver a variação\nfor i in 1 2 3 4 5; do curl -s -o /dev/null -w "%{time_total}\\n" http://localhost:8080/clientes; done`],
+      ["application.properties", `# ver quantos SELECTs cada chamada gera (conte!)\nspring.jpa.show-sql=true\n\n# Actuator: saúde e métricas\nmanagement.endpoints.web.exposure.include=health,metrics\n# depois: GET /actuator/health   GET /actuator/metrics/http.server.requests`],
+      ["teste-carga.js (k6)", `import http from "k6/http";\nimport { check } from "k6";\n\nexport const options = {\n  vus: 50,            // 50 usuários ao mesmo tempo\n  duration: "30s",\n  thresholds: { http_req_duration: ["p(95)<300"] },   // meta: p95 abaixo de 300 ms\n};\n\nexport default function () {\n  const r = http.get("http://localhost:8080/clientes");\n  check(r, { "status 200": res => res.status === 200 });\n}`],
+      ["explain.sql", `-- mostra como o PostgreSQL executa e quanto tempo gasta\nEXPLAIN ANALYZE\nSELECT * FROM cliente WHERE email = 'ana@email.com';\n\n-- "Seq Scan" = leu a tabela toda (lento em tabela grande)\n-- "Index Scan" = usou o índice (rápido)`]],
+    termos: [["Latency", "Latência: tempo que um pedido leva para ser respondido."], ["Throughput", "Vazão: quantos pedidos por segundo o sistema atende."], ["Percentile (p95, p99)", "Percentil: p95 é o tempo que 95% dos pedidos cumprem. Mostra os casos lentos que a média esconde."], ["Error rate", "Taxa de erros: porcentagem de respostas com erro (5xx)."], ["SLO", "Service Level Objective: a meta combinada, como 95% em até 300 ms."], ["Load test", "Teste de carga: simular muitos usuários ao mesmo tempo."], ["Benchmark", "Medição padronizada para comparar antes e depois."], ["Profiler", "Ferramenta que mostra onde o programa gasta tempo."], ["Actuator", "Biblioteca do Spring que expõe saúde e métricas da aplicação."], ["Metrics", "Métricas: números medidos ao longo do tempo."], ["EXPLAIN ANALYZE", "Comando do PostgreSQL que mostra o plano e o tempo real de uma consulta."], ["Seq Scan / Index Scan", "Leitura da tabela inteira / leitura usando índice."], ["Baseline", "Linha de base: a medição de antes, para comparar depois."]],
+    pontos: ["Defina uma meta e meça: sem números, é só sensação.", "Olhe p95 e p99, não só a média.", "Actuator, curl, DevTools, k6 e EXPLAIN ANALYZE são ferramentas de partida.", "Mude uma coisa por vez e meça de novo com o mesmo método."] },
+  url: { resumo: "A viagem completa de um pedido: navegador, DNS, TCP, HTTPS, servidor, Spring, banco e de volta. Entender isso ajuda a achar onde está o problema.", flow: "url", texto: [
+    `Quando você digita um endereço e aperta Enter, acontece uma sequência de etapas em menos de um segundo. Quem conhece essa sequência consegue dizer onde um problema está: na rede, no servidor, no código ou no banco. Isso é "entender como o sistema funciona de verdade".`,
+    `Primeiro o navegador divide a URL (Uniform Resource Locator, o endereço): o protocolo (https), o domínio (meusite.com), a porta (443 no https) e o caminho (/clientes/1). Computadores não se falam por nome, e sim por IP (Internet Protocol, um número como 203.0.113.10). Quem traduz o nome em número é o DNS (Domain Name System), uma espécie de lista telefônica da internet. O resultado fica em cache para a próxima vez ser mais rápida.`,
+    `Com o IP em mãos, o navegador abre uma conexão TCP (Transmission Control Protocol), que garante que os dados chegam completos e em ordem. No HTTPS há mais um passo: o TLS (Transport Layer Security) combina uma chave secreta entre você e o servidor, e tudo passa a viajar criptografado. Só então o navegador envia o pedido HTTP, com o método (GET), o caminho e os headers (cabeçalhos, informações extras como o formato aceito e o token).`,
+    `Em empresas, o pedido costuma passar antes por um load balancer (balanceador de carga), que divide os pedidos entre vários servidores iguais, e às vezes por um proxy reverso (como o Nginx), que cuida de HTTPS e cache. Chegando ao seu servidor, o Tomcat (servidor web embutido no Spring Boot) entrega o pedido a uma thread. O Spring escolhe o Controller certo pelo caminho, que chama o Service, que chama o Repository, que usa uma conexão do pool para fazer o SELECT.`,
+    `A volta segue o mesmo caminho: o banco devolve as linhas, o Hibernate monta os objetos, o Spring transforma em JSON, o servidor responde com o status (200, 404...) e o navegador mostra o resultado. Cada etapa pode falhar de um jeito: DNS errado (o site "não existe"), certificado vencido (aviso de segurança), timeout (demorou demais, 504), aplicação fora do ar (502 ou 503) ou exceção no código (500). Saber a ordem dá um roteiro para investigar.`],
+    codigos: [["Terminal: ver cada etapa", `# 1. DNS: qual é o IP deste domínio?\nnslookup meusite.com\n\n# 2. a máquina responde?\nping meusite.com\n\n# 3. pedido completo, mostrando os headers da resposta\ncurl -i https://meusite.com/clientes/1\n\n# 4. mostrando também a conversa TCP e TLS\ncurl -v https://meusite.com/clientes/1`],
+      ["Pedido HTTP (o que viaja)", `GET /clientes/1 HTTP/1.1\nHost: meusite.com\nAccept: application/json\nAuthorization: Bearer eyJhbGciOi...`],
+      ["Resposta HTTP (o que volta)", `HTTP/1.1 200 OK\nContent-Type: application/json\n\n{ "id": 1, "nome": "Ana", "email": "ana@email.com" }`],
+      ["Onde investigar", `Site não abre ...................... DNS ou servidor fora do ar\nAviso de segurança no navegador .... certificado (TLS) vencido\n502 / 503 ........................... aplicação caiu ou reiniciando\n504 ................................ algo muito lento (banco, serviço externo)\n500 ................................ exceção no código: veja o stack trace\n404 ................................ endereço ou id errado`]],
+    termos: [["URL", "Uniform Resource Locator: o endereço completo, como https://site.com/clientes/1."], ["Domain", "Domínio: o nome do site, como meusite.com."], ["DNS", "Domain Name System: transforma o nome do site em IP."], ["IP", "Internet Protocol: o número que identifica um computador na rede."], ["Port", "Porta: a 'porta de entrada' do servidor. HTTP usa 80, HTTPS usa 443, sua API local usa 8080."], ["TCP", "Transmission Control Protocol: garante entrega completa e em ordem."], ["TLS", "Transport Layer Security: a criptografia do HTTPS."], ["Header", "Cabeçalho: informações extras que viajam no pedido e na resposta."], ["Load balancer", "Balanceador: divide os pedidos entre vários servidores."], ["Reverse proxy", "Proxy reverso (como o Nginx): fica na frente da aplicação."], ["Tomcat", "Servidor web que roda aplicações Java."], ["Latency", "Latência: tempo que a viagem leva."], ["Timeout", "Tempo limite: desistir de esperar uma resposta."], ["Cache", "Cópia guardada para não buscar de novo."], ["Request / Response", "Pedido e resposta."]],
+    pontos: ["O nome vira IP no DNS; depois vem a conexão TCP e o TLS (HTTPS).", "O servidor entrega o pedido a uma thread; Controller, Service, Repository e banco.", "A resposta volta como JSON com um status.", "Conhecer a ordem dá um roteiro para achar onde o problema está."] },
+  boot: { resumo: "O que o Spring Boot faz do momento em que você roda o programa até a API estar pronta: escaneamento, beans, injeção, Flyway e Tomcat.", flow: "boot", texto: [
+    `Você já viu a linha SpringApplication.run(...) e o log cheio de mensagens ao iniciar. Entender o que há por trás tira a sensação de "mágica" e ajuda muito a ler erros de inicialização, que são comuns no começo.`,
+    `Tudo começa no main(), como em qualquer programa Java. O SpringApplication.run cria o contexto do Spring (ApplicationContext), que é a "caixa" onde ficam todos os objetos gerenciados por ele. Esses objetos se chamam beans. Ele escaneia (component scan) o pacote da classe principal e abaixo dele, procurando classes marcadas com @Component, @Service, @Repository, @Controller e @Configuration. Por isso, uma classe fora desse pacote não é encontrada.`,
+    `Para cada classe encontrada o Spring cria um objeto (por padrão, um só, o singleton) e resolve as dependências. Se o ClienteService tem um construtor que pede um ClienteRepository, o Spring cria o repositório primeiro e o entrega pronto. Isso se chama injeção de dependência (dependency injection): você não usa new, o Spring monta o quebra-cabeça. Se faltar uma peça, a aplicação para com o erro "No qualifying bean" ou "Unsatisfied dependency", e o final do stack trace diz qual.`,
+    `A autoconfiguração (auto-configuration) é o que faz o Spring Boot parecer mágico: ele olha o que está no classpath (as bibliotecas do pom.xml) e configura sozinho. Viu a dependência do PostgreSQL e do JPA? Cria a conexão e o Hibernate. Viu o starter web? Sobe o Tomcat. Em seguida o Flyway roda as migrations pendentes, o JPA confere se as entidades batem com as tabelas (ddl-auto=validate) e o Tomcat abre a porta. Quando aparece "Started ClientesApplication in 3.2 seconds", a API está pronta.`,
+    `Erros comuns na inicialização: porta 8080 já em uso (outro programa ou a própria API aberta duas vezes), não conseguir conectar ao banco (URL, usuário ou senha errados, ou o Docker parado), migration que falhou, entidade que não bate com a tabela e bean que não foi encontrado. Leia sempre o final do stack trace: a linha "Caused by" costuma dizer o motivo real.`],
+    codigos: [["ClientesApplication.java", `@SpringBootApplication   // liga escaneamento + autoconfiguração\npublic class ClientesApplication {\n    public static void main(String[] args) {\n        SpringApplication.run(ClientesApplication.class, args);\n    }\n}`],
+      ["ClienteService.java (injeção)", `@Service   // o Spring cria e gerencia este objeto (um bean)\npublic class ClienteService {\n    private final ClienteRepository repository;\n\n    // o Spring entrega o repository pronto: você não usa new\n    public ClienteService(ClienteRepository repository) {\n        this.repository = repository;\n    }\n}`],
+      ["Log ao iniciar (resumido)", `Starting ClientesApplication ...\nFlyway: Migrating schema to version 1 - clientes enderecos\nHibernate: validando entidades\nTomcat initialized with port 8080\nStarted ClientesApplication in 3.2 seconds`],
+      ["Erros comuns", `Port 8080 was already in use\n  -> outro programa usa a porta; feche-o ou mude server.port\n\nUnsatisfied dependency ... No qualifying bean of type ClienteRepository\n  -> faltou @Repository/@Service ou a classe está fora do pacote escaneado\n\nSchema-validation: missing column\n  -> a entidade mudou e faltou a migration do Flyway`]],
+    termos: [["ApplicationContext", "Contexto do Spring: a caixa onde ficam os beans."], ["Bean", "Objeto criado e gerenciado pelo Spring."], ["Component scan", "Escaneamento: o Spring procura classes marcadas no pacote."], ["@Component / @Service / @Repository / @Controller", "Marcações que dizem ao Spring: gerencie esta classe."], ["Dependency Injection", "Injeção de dependência: o Spring entrega os objetos de que a classe precisa."], ["Singleton", "Um único objeto compartilhado, em vez de um novo a cada uso."], ["Auto-configuration", "Autoconfiguração: o Boot configura sozinho conforme as bibliotecas presentes."], ["Starter", "Pacote de dependências pronto, como spring-boot-starter-web."], ["Classpath", "Lista do que o Java enxerga: suas classes e bibliotecas."], ["Embedded server", "Servidor embutido: o Tomcat vem dentro da aplicação."], ["Migration", "Script do Flyway que muda o banco por versões."], ["Profile", "Perfil: conjunto de configurações por ambiente (dev, prod)."], ["Caused by", "Linha do stack trace que mostra a causa real do erro."]],
+    pontos: ["O Spring escaneia o pacote, cria os beans e liga um no outro.", "Injeção de dependência: você pede no construtor, o Spring entrega.", "Autoconfiguração monta o que as bibliotecas do pom.xml indicam.", "Em erro de inicialização, leia o 'Caused by' no fim do stack trace."] },
+  mem: { resumo: "Como o Java usa a memória (stack e heap), o que é uma thread, por que existe o pool de threads e o pool de conexões, e o que acontece quando eles faltam.", flow: "mem", texto: [
+    `Todo programa precisa de memória para guardar variáveis e objetos. O Java divide isso em duas áreas principais. A stack (pilha) guarda as variáveis locais e a ordem das chamadas de método: cada vez que um método é chamado, ganha um "andar" na pilha, que some quando o método termina. É muito rápida e pequena. O heap (monte) guarda os objetos criados com new; é grande, compartilhado e limpo pelo Garbage Collector quando ninguém mais usa o objeto.`,
+    `Dois erros famosos vêm daí. O StackOverflowError acontece quando a pilha enche, quase sempre por um método que chama a si mesmo sem parar (recursão sem fim). O OutOfMemoryError acontece quando o heap acaba: por exemplo, ao carregar 5 milhões de linhas do banco em uma lista, ou ao guardar objetos para sempre em uma lista estática (memory leak, vazamento de memória).`,
+    `Uma thread é uma linha de execução: um "trabalhador" fazendo uma tarefa. Um servidor web atende muita gente ao mesmo tempo usando várias threads: cada pedido é cuidado por uma. Criar threads é caro, então o servidor mantém um thread pool (grupo de threads reutilizáveis). O Tomcat usa até 200 por padrão. Se chegam mais pedidos do que threads livres, eles esperam na fila, e o sistema fica lento.`,
+    `Com várias threads mexendo nos mesmos dados aparece a concorrência (concurrency) e seu maior perigo: a race condition (condição de corrida). Duas threads leem o contador 5, as duas somam 1 e gravam 6, quando o certo seria 7. Isso é difícil de reproduzir e gera bugs misteriosos. As soluções são: não compartilhar dados mutáveis (objetos de serviço sem estado, que é o padrão do Spring), usar estruturas seguras para threads ou travar o trecho crítico com synchronized.`,
+    `Falar com o banco também é caro, então existe o pool de conexões (o Spring usa o HikariCP): um grupo de conexões prontas, 10 por padrão, que as threads pegam emprestadas e devolvem. Se todas estiverem ocupadas, a thread espera, e depois de um tempo lança uma exceção de timeout. Dois motivos típicos: consultas lentas segurando a conexão por muito tempo e o N+1. Por isso desempenho no banco e no pool andam juntos. Aumentar o pool sem medir só empurra o problema para o banco.`],
+    codigos: [["StackOverflow.java", `// recursão sem condição de parada: a pilha enche\nstatic int contar(int n) {\n    return contar(n + 1);   // StackOverflowError\n}`],
+      ["Heap.java", `Cliente c = new Cliente("Ana");   // 'c' fica na stack; o objeto Cliente, no heap\nList<Cliente> todos = new ArrayList<>();\n// carregar milhões de linhas aqui pode causar OutOfMemoryError`],
+      ["RaceCondition.java", `class Contador {\n    private int total = 0;\n\n    void somar() { total++; }                   // NÃO é seguro com várias threads\n    synchronized void somarSeguro() { total++; } // só uma thread por vez\n}`],
+      ["application.properties", `# threads do Tomcat (padrão 200)\nserver.tomcat.threads.max=200\n\n# pool de conexões do banco (padrão 10)\nspring.datasource.hikari.maximum-pool-size=10\nspring.datasource.hikari.connection-timeout=30000   # espera até 30 s por uma conexão`]],
+    termos: [["Stack", "Pilha: memória rápida das variáveis locais e das chamadas de método."], ["Heap", "Monte: memória dos objetos, compartilhada e limpa pelo Garbage Collector."], ["Garbage Collector", "Coletor de lixo: apaga objetos que ninguém usa."], ["StackOverflowError", "A pilha encheu, geralmente por recursão sem fim."], ["OutOfMemoryError", "O heap acabou."], ["Memory leak", "Vazamento de memória: guardar objetos sem necessidade, para sempre."], ["Thread", "Linha de execução: um trabalhador fazendo uma tarefa."], ["Thread pool", "Grupo de threads reaproveitáveis."], ["Concurrency", "Concorrência: várias tarefas acontecendo ao mesmo tempo."], ["Race condition", "Condição de corrida: duas threads mexem no mesmo dado e o resultado sai errado."], ["synchronized", "Trava que deixa uma thread por vez entrar no trecho."], ["Connection pool", "Pool de conexões: conexões com o banco prontas para emprestar."], ["HikariCP", "O pool de conexões usado por padrão no Spring Boot."], ["Stateless", "Sem estado: o objeto não guarda dados que mudam entre pedidos, e por isso é seguro."]],
+    pontos: ["Stack: variáveis locais, rápida e pequena. Heap: objetos, grande e compartilhado.", "Cada pedido usa uma thread do pool; faltando threads, forma fila.", "Race condition: duas threads mexendo no mesmo dado. Evite dados compartilhados que mudam.", "O pool de conexões (10 por padrão) é limitado: consulta lenta segura a conexão."] },
+  bdint: { resumo: "O que acontece dentro do banco: transações (tudo ou nada), ACID, índice B-tree, plano de execução e locks.", flow: "bdint", texto: [
+    `O banco de dados não é só uma planilha: ele garante regras para não perder nem corromper dados mesmo com muita gente usando ao mesmo tempo. A principal é a transação (transaction): um grupo de operações que vale por inteiro ou não vale. Pense em uma transferência de R$ 100: debitar de uma conta e creditar na outra. Se a luz acabar no meio, não pode sumir dinheiro. Com transação, ou as duas partes acontecem (COMMIT) ou nenhuma (ROLLBACK).`,
+    `As garantias de uma transação têm a sigla ACID. A de Atomicidade: tudo ou nada. C de Consistência: o banco sempre respeita as regras (chaves, campos obrigatórios). I de Isolamento: transações simultâneas não enxergam as mudanças pela metade uma da outra. D de Durabilidade: depois do COMMIT, o dado sobrevive até a um desligamento. No Spring, a anotação @Transactional faz um método inteiro rodar em uma transação: se der uma exceção, ocorre o rollback.`,
+    `O índice (index) normalmente é uma estrutura chamada B-tree (árvore balanceada): em vez de ler 1 milhão de linhas para achar um e-mail, o banco desce por poucos níveis da árvore e chega direto. Em troca, o índice ocupa espaço e deixa gravações um pouco mais lentas, porque também precisa ser atualizado. Por isso se cria índice nas colunas muito usadas em WHERE, JOIN e ORDER BY, e não em todas. As chaves primárias e únicas já ganham índice automaticamente.`,
+    `Como saber o que o banco faz com sua consulta? Com o plano de execução (execution plan), mostrado pelo EXPLAIN. Ele revela se o banco usou o índice (Index Scan) ou leu tudo (Seq Scan), qual a ordem dos JOINs e o custo estimado. Aprender a ler isso é uma habilidade valiosa para achar consultas lentas.`,
+    `Por fim, o lock (trava): quando uma transação altera uma linha, outras que queiram alterar a mesma esperam. Isso protege os dados, mas transações longas deixam outras esperando (e seguram a conexão do pool). Se duas transações esperam uma pela outra, acontece um deadlock (impasse), e o banco cancela uma. A dica: transações curtas, só com o que precisa ser atômico, e nunca chamar serviço externo lento dentro delas.`],
+    codigos: [["transacao.sql", `BEGIN;\n  UPDATE conta SET saldo = saldo - 100 WHERE id = 1;\n  UPDATE conta SET saldo = saldo + 100 WHERE id = 2;\nCOMMIT;      -- confirma as duas\n-- ROLLBACK; -- desfaz as duas, se algo der errado`],
+      ["TransferenciaService.java", `@Service\npublic class TransferenciaService {\n\n    @Transactional   // tudo ou nada: exceção = rollback\n    public void transferir(Long de, Long para, BigDecimal valor) {\n        Conta a = repository.findById(de).orElseThrow();\n        Conta b = repository.findById(para).orElseThrow();\n        a.debitar(valor);   // se isto lançar exceção...\n        b.creditar(valor);  // ...nada foi gravado\n    }\n}`],
+      ["indice-e-plano.sql", `-- cria o índice\nCREATE INDEX idx_cliente_email ON cliente (email);\n\n-- confere se foi usado\nEXPLAIN ANALYZE\nSELECT * FROM cliente WHERE email = 'ana@email.com';\n-- Index Scan using idx_cliente_email   (rápido)\n-- Seq Scan on cliente                  (leu a tabela toda)`]],
+    termos: [["Transaction", "Transação: grupo de operações que vale por inteiro ou não vale."], ["COMMIT", "Confirma a transação."], ["ROLLBACK", "Desfaz a transação."], ["ACID", "Atomicidade, Consistência, Isolamento e Durabilidade: as garantias do banco."], ["@Transactional", "Anotação do Spring que roda o método dentro de uma transação."], ["B-tree", "Árvore balanceada usada pela maioria dos índices."], ["Index scan / Seq scan", "Ler usando o índice / ler a tabela inteira."], ["Execution plan", "Plano de execução: como o banco vai executar a consulta."], ["Lock", "Trava: impede duas transações de mudarem a mesma linha ao mesmo tempo."], ["Deadlock", "Impasse: duas transações esperando uma pela outra."], ["Isolation level", "Nível de isolamento: o quanto uma transação enxerga da outra."], ["Atomicity", "Atomicidade: tudo ou nada."], ["Durability", "Durabilidade: depois do COMMIT, o dado não se perde."]],
+    pontos: ["Transação é tudo ou nada: COMMIT confirma, ROLLBACK desfaz.", "ACID: Atomicidade, Consistência, Isolamento, Durabilidade.", "Índice (B-tree) acelera buscas, mas custa espaço e gravação.", "Use EXPLAIN ANALYZE para ver se o banco leu o índice ou a tabela toda.", "Transações curtas evitam locks longos."] }
+});
 Object.entries(MAIS).forEach(([k, v]) => { AULAS[k] = Object.assign(AULAS[k] || {}, v); });
 
 const Q = (tema, q, op, c, por, ana, dica, aula, code) => ({ tema, q, op, c, por, ana, dica, aula, code });
@@ -1196,6 +1324,57 @@ PERGUNTAS.push(
   Q("IA a seu favor", "Por que pedir 'o plano antes do código' é uma boa técnica?", ["Porque gasta menos tempo", "Porque você revisa o que será mudado e aprova antes, evitando surpresas", "Porque a IA fica mais rápida", "Porque dispensa testar"], 1, "O plano mostra o que ela pretende fazer. Você corrige o rumo antes de qualquer mudança.", "É ver a planta da casa antes de levantar as paredes.", "Aprovar antes.", "ia"),
   Q("IA a seu favor", "Qual é a melhor forma de usar a IA para aprender a fundo?", ["Pedir sempre a resposta pronta", "Pedir uma explicação simples, tentar sozinha e pedir correção do que errou", "Nunca usar", "Copiar sem ler"], 1, "Tentar primeiro fixa o aprendizado. A IA vira professora que corrige, e não alguém que pensa por você.", "É ter um professor particular, e não alguém que faz a lição no seu lugar.", "Tente primeiro.", "ia")
 );
+PERGUNTAS.push(
+  Q("Medir o desempenho", "Qual é o primeiro passo para melhorar o desempenho de uma aplicação?", ["Aumentar a memória do servidor", "Definir uma meta e medir para achar o gargalo", "Reescrever tudo em outra linguagem", "Adicionar cache em todo lugar"], 1, "Sem medir, você otimiza no chute e pode mexer no que não era o problema. Meta e medição vêm primeiro.", "É ir ao médico fazer exames antes de tomar remédio.", "Primeiro medir.", "medir"),
+  Q("Medir o desempenho", "O que significa p95 = 300 ms?", ["Em média o sistema leva 95 ms", "95% dos pedidos foram respondidos em até 300 ms", "O sistema atende 95 pedidos por segundo", "95% dos pedidos deram erro"], 1, "Percentil mostra o tempo que a maioria cumpre e revela os casos lentos que a média esconde.", "É dizer que 95 de cada 100 pizzas chegam em até 30 minutos.", "Percentil, não média.", "medir"),
+  Q("Medir o desempenho", "O que é throughput (vazão)?", ["O tempo de um pedido", "Quantos pedidos o sistema atende por segundo", "O tamanho do banco", "O número de erros"], 1, "Latência é o tempo de um pedido; throughput é a quantidade por tempo.", "Latência é o tempo de uma pessoa no caixa; vazão é quantas pessoas o mercado atende por hora.", "Quantidade por segundo.", "medir"),
+  Q("Medir o desempenho", "Qual ferramenta simula muitos usuários ao mesmo tempo (teste de carga)?", ["k6 ou JMeter", "Git", "Flyway", "IntelliJ"], 0, "k6 e JMeter criam usuários virtuais e mostram tempos e erros sob carga.", "É convidar 50 pessoas para testar a loja ao mesmo tempo.", "Carga.", "medir"),
+  Q("Medir o desempenho", "No PostgreSQL, qual comando mostra como a consulta é executada e quanto tempo leva?", ["EXPLAIN ANALYZE", "SELECT TIME", "SHOW SPEED", "DROP INDEX"], 0, "O EXPLAIN ANALYZE mostra o plano (se usou índice) e o tempo real.", "É o raio-X da consulta.", "Começa com EXPLAIN.", "medir"),
+  Q("Medir o desempenho", "Você mudou 4 coisas ao mesmo tempo e o sistema ficou mais rápido. Qual é o problema dessa abordagem?", ["Nenhum", "Você não sabe qual mudança ajudou (e se alguma piorou)", "A IA fica confusa", "O banco trava"], 1, "Mude uma coisa por vez e meça de novo. Assim você aprende o que funcionou.", "É mudar a receita inteira e não saber qual ingrediente melhorou o bolo.", "Uma por vez.", "medir"),
+  Q("Da URL à resposta", "Qual é a função do DNS?", ["Criptografar a conexão", "Transformar o nome do site (meusite.com) em um IP", "Guardar os dados do usuário", "Executar o Java"], 1, "O DNS é a lista telefônica da internet: do nome ao número.", "É procurar o telefone de alguém pelo nome.", "Nome para número.", "url"),
+  Q("Da URL à resposta", "O que o TLS faz no HTTPS?", ["Acelera o site", "Cria a criptografia da conexão (o cadeado)", "Procura o IP", "Cria o banco de dados"], 1, "O TLS combina uma chave secreta entre o navegador e o servidor, e os dados viajam protegidos.", "É falar em código secreto que só você e o servidor entendem.", "Segurança da conexão.", "url"),
+  Q("Da URL à resposta", "O site mostra 504 (Gateway Timeout). O que isso indica?", ["O endereço não existe", "Alguém no caminho esperou demais por uma resposta lenta, como o banco ou um serviço externo", "A senha está errada", "O certificado venceu"], 1, "504 é demora excessiva de um servidor intermediário esperando outro. Procure o que está lento.", "É o garçom esperando a cozinha que não entrega.", "Timeout = demorou demais.", "url"),
+  Q("Da URL à resposta", "Qual é a ordem correta de uma requisição em uma API Spring?", ["Banco, Controller, Service, navegador", "Navegador, Controller, Service, Repository, banco, e a resposta volta", "Service, navegador, banco, Controller", "Repository, Controller, navegador, Service"], 1, "O pedido desce da porta de entrada (Controller) até o banco, e a resposta volta pelo caminho inverso.", "É pedir no balcão, a cozinha prepara e o prato volta pelo mesmo caminho.", "Começa e termina no navegador.", "url"),
+  Q("O que o Spring faz ao iniciar", "O que é um bean no Spring?", ["Uma tabela do banco", "Um objeto criado e gerenciado pelo Spring", "Um erro de compilação", "Um tipo de variável"], 1, "Beans são os objetos (Service, Repository, Controller...) que o Spring cria e liga uns aos outros.", "São as peças do jogo que o Spring monta e entrega para quem precisa.", "Objeto gerenciado.", "boot"),
+  Q("O que o Spring faz ao iniciar", "O que é injeção de dependência?", ["O Spring entrega pronto o objeto de que a classe precisa, em vez de ela usar new", "Colocar senhas no código", "Copiar arquivos para o servidor", "Um tipo de SQL Injection"], 0, "A classe pede o que precisa no construtor, e o Spring fornece. Isso facilita trocar e testar.", "É a cozinha receber os ingredientes prontos, em vez de ir ao mercado.", "Você pede, ele entrega.", "boot"),
+  Q("O que o Spring faz ao iniciar", "A API não sobe e mostra 'Port 8080 was already in use'. Qual é a causa mais provável?", ["Falta de internet", "Outro programa (ou a própria API aberta duas vezes) já usa a porta 8080", "O banco está vazio", "O Java está desatualizado"], 1, "Só um programa pode usar uma porta por vez. Feche o outro ou mude o server.port.", "É dois carros querendo a mesma vaga.", "Porta ocupada.", "boot"),
+  Q("O que o Spring faz ao iniciar", "Ao ler um stack trace de erro de inicialização, onde costuma estar a causa real?", ["Na primeira linha", "Nas linhas 'Caused by', no final", "Em lugar nenhum", "No arquivo pom.xml sempre"], 1, "O final do trace costuma ter a causa original, enquanto o começo mostra só as consequências.", "É seguir o rastro até a origem do vazamento.", "Procure 'Caused by'.", "boot"),
+  Q("Memória, threads e conexões", "Onde ficam os objetos criados com new?", ["Na stack", "No heap", "No pom.xml", "No banco"], 1, "Os objetos ficam no heap. A stack guarda variáveis locais e a ordem das chamadas.", "O heap é o armazém; a stack é a mesa de trabalho.", "Memória grande e compartilhada.", "mem"),
+  Q("Memória, threads e conexões", "Qual erro acontece por uma recursão que nunca para?", ["OutOfMemoryError", "StackOverflowError", "NullPointerException", "SQLException"], 1, "Cada chamada ocupa um andar da pilha. Sem condição de parada, ela enche.", "É uma pilha de pratos que não para de crescer até cair.", "Pilha cheia.", "mem"),
+  Q("Memória, threads e conexões", "O que é uma race condition?", ["Um teste de velocidade", "Duas threads mexendo no mesmo dado ao mesmo tempo e o resultado sai errado", "Um erro de sintaxe", "Uma consulta lenta"], 1, "Se duas threads somam 1 ao mesmo contador ao mesmo tempo, uma soma pode se perder.", "É duas pessoas editando o mesmo documento ao mesmo tempo e uma sobrescreve a outra.", "Disputa pelo mesmo dado.", "mem"),
+  Q("Memória, threads e conexões", "O pool de conexões do banco tem 10 conexões e todas estão ocupadas. O que acontece com o próximo pedido?", ["Ele cria conexões infinitas", "Ele espera na fila e, passado o tempo limite, dá erro", "O banco é apagado", "Nada, tudo funciona normal"], 1, "As conexões são limitadas. Consultas lentas seguram a conexão e criam fila.", "É um restaurante com 10 mesas lotado: os outros esperam na porta.", "Pool é limitado.", "mem"),
+  Q("Banco por dentro", "O que o ROLLBACK faz?", ["Confirma as mudanças", "Desfaz todas as mudanças da transação", "Cria uma tabela", "Apaga o banco"], 1, "ROLLBACK volta ao estado de antes da transação. COMMIT é que confirma.", "É apertar Ctrl+Z em um conjunto de mudanças.", "Desfazer.", "bdint"),
+  Q("Banco por dentro", "O que a letra A de ACID (atomicidade) garante?", ["Tudo ou nada: a transação vale inteira ou não vale", "Que o banco é rápido", "Que ninguém acessa o banco", "Que as senhas são seguras"], 0, "Ou todas as operações da transação acontecem, ou nenhuma.", "Uma transferência não pode debitar de uma conta e esquecer de creditar na outra.", "Tudo ou nada.", "bdint"),
+  Q("Banco por dentro", "Qual é o custo de criar índices em todas as colunas?", ["Nenhum", "Ocupam espaço e deixam as gravações mais lentas", "O banco fica sem senha", "As consultas deixam de funcionar"], 1, "O índice precisa ser atualizado a cada INSERT, UPDATE e DELETE. Crie onde há muita busca.", "É manter o índice do livro atualizado: ajuda a achar, mas dá trabalho a cada mudança.", "Nada é de graça.", "bdint"),
+  Q("Banco por dentro", "No resultado de um EXPLAIN aparece 'Seq Scan' em uma tabela enorme. O que isso indica?", ["O banco leu a tabela inteira, sem usar índice", "O banco usou o melhor índice", "A tabela está vazia", "A consulta falhou"], 0, "Seq Scan é leitura sequencial de tudo. Em tabelas grandes, avalie criar um índice na coluna do WHERE.", "É folhear o livro inteiro para achar uma palavra.", "Sequencial = tudo.", "bdint")
+);
+PERGUNTAS.push(
+  Q("Sequência de algoritmos", "O que é um algoritmo?", ["Uma sequência de passos, em ordem, que leva a um resultado", "Um tipo de variável", "Um erro do programa", "Uma biblioteca do Java"], 0, "Algoritmo é uma receita: passos claros e em ordem para resolver um problema.", "É a receita de bolo: se a ordem estiver errada, o bolo não sai.", "Pense em receita.", "algo"),
+  Q("Sequência de algoritmos", "O que é o teste de mesa?", ["Rodar o programa em outro computador", "Acompanhar à mão o valor das variáveis, linha por linha", "Apagar os bugs sozinho", "Testar a velocidade do banco"], 1, "No teste de mesa você simula o código no papel e anota como cada variável muda. Ajuda a achar erros de lógica.", "É ensaiar a peça antes da estreia.", "Acompanhar à mão.", "algo"),
+  Q("Sequência de algoritmos", "Para achar o maior número de uma lista, qual é o primeiro passo do algoritmo?", ["Somar todos os números", "Assumir que o primeiro número é o maior até agora", "Ordenar a lista ao contrário", "Apagar o menor"], 1, "Começa assumindo o primeiro como maior e compara com os seguintes, trocando quando aparece um maior.", "É o campeão que defende o título até aparecer alguém melhor.", "Comece com um candidato.", "algo"),
+  Q("Java e JVM", "O que é o bytecode?", ["O código que você escreve", "Um código intermediário (.class) gerado pelo compilador, igual para qualquer sistema", "Um tipo de banco de dados", "Uma biblioteca de testes"], 1, "O javac transforma o .java em bytecode, e a JVM executa. Por isso o Java roda em vários sistemas.", "É um texto em idioma universal, que cada intérprete adapta para o local.", "Fica entre o código e o computador.", "jvm"),
+  Q("Java e JVM", "Qual é o papel do Garbage Collector (coletor de lixo)?", ["Apagar arquivos do computador", "Liberar da memória os objetos que ninguém mais usa", "Corrigir erros de sintaxe", "Comprimir o código"], 1, "A JVM descobre sozinha os objetos sem uso e limpa o espaço, para o programador não precisar fazer isso.", "É o faxineiro que recolhe o que ninguém mais vai usar.", "Limpa a memória.", "jvm"),
+  Q("Java e JVM", "Qual programa transforma o arquivo .java em .class?", ["javac (o compilador)", "git", "Maven Repository", "Flyway"], 0, "O javac compila. Depois o comando java executa o resultado na JVM.", "É o tradutor que prepara o texto antes da leitura.", "Começa com 'java' e termina com 'c' de compilador.", "jvm"),
+  Q("Classes e objetos", "O que faz a palavra new?", ["Apaga um objeto", "Cria um objeto a partir de uma classe e chama o construtor", "Declara uma variável do tipo int", "Importa uma biblioteca"], 1, "Cliente c = new Cliente(...) reserva memória e prepara o objeto com o construtor.", "É mandar fabricar um item novo a partir do molde.", "Criar.", "classes"),
+  Q("Classes e objetos", "Para que serve o construtor?", ["Para apagar o objeto", "Para preparar o objeto com os valores iniciais quando ele é criado", "Para imprimir na tela", "Para fechar o programa"], 1, "O construtor tem o mesmo nome da classe e roda no new, recebendo os valores iniciais.", "É montar o móvel que acabou de sair da caixa, deixando-o pronto para usar.", "Roda quando o objeto nasce.", "classes"),
+  Q("Classes e objetos", "Cliente ana e Cliente carlos são criados com new. Se você mudar o nome da ana, o que acontece com o carlos?", ["Também muda", "Nada: cada objeto tem os seus próprios valores", "Dá erro", "O carlos é apagado"], 1, "Os objetos são independentes. Só compartilham o molde (a classe).", "Dois bolos feitos da mesma forma: mudar a cobertura de um não muda o outro.", "Cada um tem os seus.", "classes"),
+  Q("Encapsulamento", "O que significa um atributo private?", ["Qualquer classe pode alterá-lo", "Só a própria classe acessa diretamente", "Ele não existe", "Ele é guardado no banco"], 1, "Private esconde o dado. O acesso de fora passa pelos métodos públicos, que podem validar.", "É o cofre: só o caixa mexe, seguindo as regras.", "Privado = só por dentro.", "enc"),
+  Q("Encapsulamento", "Qual é a vantagem de depositar() validar o valor antes de mudar o saldo?", ["Deixa o código mais curto", "Garante que o objeto nunca fica em um estado inválido, como saldo negativo por engano", "Faz o saldo aumentar mais rápido", "Evita usar classes"], 1, "A regra fica em um só lugar e vale sempre. Se ela mudar, você muda em um lugar só.", "É o caixa conferindo o valor antes de aceitar o depósito.", "Proteger o dado.", "enc"),
+  Q("Encapsulamento", "O que é um getter?", ["Um método que lê o valor de um atributo", "Um laço de repetição", "Uma exceção", "Um tipo de banco"], 0, "getSaldo() devolve o saldo sem permitir mudá-lo. Quem altera é o setter ou um método com regra.", "É a janela do cofre: dá para olhar, mas não para mexer.", "Get = pegar.", "enc"),
+  Q("Herança e polimorfismo", "O que é um override (sobrescrita)?", ["Apagar a classe mãe", "A classe filha troca o método da mãe pela sua própria versão", "Criar um segundo construtor", "Copiar uma variável"], 1, "Com @Override, a filha redefine o comportamento herdado. Cachorro e Gato respondem falar() cada um do seu jeito.", "É herdar a receita da avó e adaptar o tempero.", "Reescrever na filha.", "poli"),
+  Q("Herança e polimorfismo", "Qual é a grande vantagem do polimorfismo?", ["Escrever código que funciona para qualquer tipo de animal, inclusive os que ainda não existem", "Deixar o programa mais lento", "Evitar o uso de classes", "Impedir a herança"], 0, "Você trabalha com o tipo geral (Animal) e o Java chama a versão certa de cada objeto.", "É um controle universal: o mesmo botão funciona em qualquer aparelho.", "Mesmo código, vários tipos.", "poli"),
+  Q("Abstração", "Qual é a diferença entre interface e classe abstrata?", ["Nenhuma", "Interface é um contrato sem código; a classe abstrata pode ter código pronto e partes incompletas", "A interface guarda dados no banco", "A classe abstrata não pode ter métodos"], 1, "As duas definem o que deve existir. A abstrata também pode reaproveitar código; a interface é só o contrato.", "Interface é o regulamento; classe abstrata é uma casa com algumas paredes prontas.", "Contrato x casa incompleta.", "abs"),
+  Q("Abstração", "O que significa implements?", ["A classe cumpre o contrato de uma interface", "A classe herda de outra classe", "A classe é apagada", "A classe vira privada"], 0, "Pix implements Pagamento quer dizer que Pix promete oferecer tudo o que a interface define.", "É assinar o contrato e se comprometer a cumprir.", "Cumprir o contrato.", "abs"),
+  Q("Abstração", "Entrou o Boleto como nova forma de pagamento. Por que usar a interface Pagamento ajuda?", ["O resto do programa não precisa mudar, pois só conhece o contrato", "Porque o Boleto precisa de mais memória", "Porque a interface apaga o Pix", "Não ajuda"], 0, "Quem usa Pagamento chama pagar() sem saber qual é o tipo. Basta criar a nova classe que cumpre o contrato.", "É a tomada padrão: qualquer aparelho novo encaixa sem mexer na parede.", "Dependa do contrato.", "abs"),
+  Q("Tratamento de exceções", "O que é um stack trace?", ["O rastro do erro, mostrando por onde o código passou", "Um tipo de laço", "Uma biblioteca", "O nome do banco"], 0, "Ele lista as chamadas de método até o erro. Leia de cima para baixo e procure a linha do seu código.", "É a pegada deixada pelo erro, que mostra o caminho percorrido.", "Rastro do erro.", "exc"),
+  Q("Tratamento de exceções", "Para que serve o catch?", ["Para capturar a exceção e decidir o que fazer", "Para criar um objeto", "Para repetir um código", "Para declarar uma variável"], 0, "O try tenta; o catch captura o erro, e o programa pode continuar ou avisar o usuário.", "É a rede de segurança do trapezista.", "Capturar.", "exc"),
+  Q("JPA: LAZY e EAGER", "O que é a LazyInitializationException?", ["Uma lista LAZY foi acessada depois que a transação fechou", "O banco está desligado", "Uma senha errada", "Um erro de sintaxe"], 0, "O JPA só busca a lista LAZY enquanto a transação está aberta. Fora dela, não consegue mais ir ao banco.", "É tentar pedir um prato quando a cozinha já fechou.", "A transação já tinha acabado.", "lazy"),
+  Q("JPA: LAZY e EAGER", "Qual é a diferença entre EAGER e LAZY?", ["EAGER busca tudo junto sempre; LAZY só busca quando usar", "LAZY busca tudo junto; EAGER nunca busca", "São iguais", "EAGER é só para números"], 0, "Eager é ansioso: busca já. Lazy é preguiçoso: espera você precisar.", "Eager já traz tudo da mala; Lazy só abre a mala quando precisa.", "Ansioso x preguiçoso.", "lazy"),
+  Q("JPA: LAZY e EAGER", "O que é o Hibernate?", ["Uma biblioteca que implementa o JPA e conversa com o banco", "Um tipo de banco de dados", "Um servidor web", "Um editor de código"], 0, "O JPA é o padrão (o contrato); o Hibernate é quem faz o trabalho de transformar objetos em linhas de tabela.", "O JPA é a lei; o Hibernate é quem a executa.", "Implementa o JPA.", "lazy"),
+  Q("SOLID e padrões de projeto", "O que diz o S de SOLID (Single Responsibility)?", ["Cada classe deve cuidar de uma única responsabilidade", "Toda classe deve ser pública", "Cada método deve ter 100 linhas", "Só pode existir uma classe por projeto"], 0, "Uma classe com várias funções é difícil de entender e de mudar. Separe: frete, e-mail e banco.", "É ter um profissional para cada função, em vez de um só fazendo tudo.", "Uma única responsabilidade.", "solid"),
+  Q("SOLID e padrões de projeto", "O que é refatorar (refactoring)?", ["Melhorar a organização do código sem mudar o que ele faz", "Apagar o projeto", "Trocar de linguagem", "Adicionar bugs de propósito"], 0, "A refatoração deixa o código mais limpo e fácil de manter. Os testes garantem que o comportamento continua igual.", "É arrumar a casa sem mudar quem mora nela.", "Mesma função, código melhor.", "solid"),
+  Q("SOLID e padrões de projeto", "O padrão Strategy serve para quê?", ["Trocar o jeito de fazer algo (como calcular o frete) sem mudar o resto do código", "Criar o banco de dados", "Executar testes", "Fazer login"], 0, "Cada jeito vira uma classe que cumpre a mesma interface, e você escolhe qual usar.", "É escolher o meio de transporte: carro, ônibus ou bicicleta, e o destino continua o mesmo.", "Trocar o método.", "solid")
+);
 
 /* ---------- navegação ---------- */
 const VIEWS = ["hoje", "trilha", "aula", "quiz", "res", "http", "ia", "notas", "evolucao", "carreira"];
@@ -1211,6 +1390,7 @@ function go(v, hash = true) {
   document.querySelector(`#tabs button[data-v="${aba}"]`).setAttribute("aria-current", "page");
   if (hash && location.hash.slice(1) !== v) { try { location.hash = v; } catch (e) {} }
   window.scrollTo(0, 0);
+  refresca(v);
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => go(b.dataset.v));
 
@@ -1259,13 +1439,11 @@ function montaTrace(el, key) {
 }
 
 /* ---------- trilha e aula ---------- */
-let idx = 0;
-$("etapas").innerHTML = MODULOS.map(m => `<div class="${m.nv}"><div class="modulo"><span class="nv">${m.niv}</span>${m.n}</div>${m.it.map(i => { const k = idx++; return `<button class="etapa ${m.nv} ${i[2]}" data-i="${k}"><span class="no">${i[2] === "feita" ? "✓" : k + 1}</span><span><h3>${i[0]}</h3><p>${i[1]}</p></span><span class="tag">${i[2] === "feita" ? "Concluída" : i[2] === "atual" ? "Você está aqui" : (AULAS[i[4]] ? "Aula pronta" : "Em breve")}</span></button>`; }).join("")}</div>`).join("");
-document.querySelectorAll(".etapa").forEach(b => b.onclick = () => {
-  const e = ETAPAS[b.dataset.i];
-  if (!AULAS[e[5]]) return toast(`"${e[0]}": no site final, esta aula terá exemplo em código, fluxograma animado e quiz.`);
-  abreAula(+b.dataset.i);
-});
+function pintaTrilha() {
+  calcEtapas(); let idx = 0;
+  $("etapas").innerHTML = MODULOS.map(m => `<div class="${m.nv}"><div class="modulo"><span class="nv">${m.niv}</span>${m.n}</div>${m.it.map(i => { const k = idx++, e = ETAPAS[k]; return `<button class="etapa ${m.nv} ${e[3]}" data-i="${k}"><span class="no">${e[3] === "feita" ? "✓" : k + 1}</span><span><h3>${i[0]}</h3><p>${i[1]}</p></span><span class="tag">${e[3] === "feita" ? "Concluída" : e[3] === "atual" ? "Você está aqui" : e[4] > 0 ? e[4] + "%" : "Começar"}</span></button>`; }).join("")}</div>`).join("");
+  document.querySelectorAll(".etapa").forEach(b => b.onclick = () => abreAula(+b.dataset.i));
+}
 let aulaAtual = 0;
 const GLOSS = (() => { const m = new Map(); Object.values(AULAS).forEach(a => (a.termos || []).forEach(t => { if (!m.has(t[0].toLowerCase())) m.set(t[0].toLowerCase(), t); })); return [...m.values()].sort((a, b) => a[0].localeCompare(b[0])); })();
 function pintaGloss() {
@@ -1288,10 +1466,13 @@ function abreAula(i) {
   $("aTermosBox").hidden = !a.termos; $("aTermos").innerHTML = (a.termos || []).map(() => `<div class="termo"><b></b><p></p></div>`).join("");
   [...$("aTermos").children].forEach((d, k) => { d.querySelector("b").textContent = a.termos[k][0]; d.querySelector("p").textContent = a.termos[k][1]; });
   $("aTrace").innerHTML = ""; $("aFlow").innerHTML = "";
+  pintaLida();
   go("aula");
   if (a.trace) montaTrace($("aTrace"), a.trace);
   if (a.flow) montaFlow($("aFlow"), a.flow);
 }
+function pintaLida() { const k = ETAPAS[aulaAtual][5]; $("aLida").textContent = PR.lidas[k] ? "Estudada ✓ (desmarcar)" : "Marcar como estudada"; }
+$("aLida").onclick = () => { const k = ETAPAS[aulaAtual][5]; if (PR.lidas[k]) { delete PR.lidas[k]; } else { PR.lidas[k] = hojeStr(); marcaDia(); toast("Aula marcada como estudada. +20 XP"); } salvaPR(); pintaLida(); };
 $("aulaVoltar").onclick = () => go("trilha");
 $("aQuiz").onclick = () => {
   const k = ETAPAS[aulaAtual][5], ix = PERGUNTAS.map((p, n) => p.aula === k ? n : -1).filter(n => n >= 0);
@@ -1306,8 +1487,9 @@ const LIM = 25;
 function setModo(m) { modo = m; $("mTreino").setAttribute("aria-pressed", m === "treino"); $("mProva").setAttribute("aria-pressed", m === "prova"); $("dicaModo").textContent = m === "treino" ? "Erra? Eu explico na hora e a pergunta volta mais tarde." : "Tempo contado, sem dicas. A correção vem junto com a nota."; }
 $("mTreino").onclick = () => setModo("treino"); $("mProva").onclick = () => setModo("prova"); setModo("treino");
 $("comecar").onclick = () => comecar();
-$("treinarFracos").onclick = () => comecar([1, 2, 3]);
-$("evTreinar").onclick = () => comecar([1]);
+function treinaErros() { if (!PR.pend.length) return toast("Você ainda não tem erros para treinar. Faça uma rodada primeiro."); comecar([...PR.pend].sort(() => Math.random() - .5).slice(0, 5)); }
+$("treinarFracos").onclick = treinaErros;
+$("evTreinar").onclick = treinaErros;
 $("rInicio").onclick = () => go("hoje");
 $("rTreinar").onclick = () => comecar(resp.map((r, k) => r.ok ? -1 : pergs[k].idx).filter(k => k >= 0));
 function sorteia(n) {
@@ -1316,9 +1498,10 @@ function sorteia(n) {
   if (livres.length < n) { vistas = []; livres = PERGUNTAS.map((_, k) => k); }
   livres.sort(() => Math.random() - .5);
   const esc = [], temas = new Set();
-  for (const k of livres) if (esc.length < n && !temas.has(PERGUNTAS[k].tema)) { esc.push(k); temas.add(PERGUNTAS[k].tema); }
+  [...PR.pend].sort(() => Math.random() - .5).slice(0, 2).forEach(k => { esc.push(k); temas.add(PERGUNTAS[k].tema); });   // erros antigos voltam
+  for (const k of livres) if (esc.length < n && !esc.includes(k) && !temas.has(PERGUNTAS[k].tema)) { esc.push(k); temas.add(PERGUNTAS[k].tema); }
   for (const k of livres) if (esc.length < n && !esc.includes(k)) esc.push(k);
-  guarda("vistas", vistas.concat(esc)); return esc;
+  guarda("vistas", vistas.concat(esc.filter(k => !vistas.includes(k)))); return esc;
 }
 function comecar(idxs) {
   const base = idxs && idxs.length ? idxs : sorteia(5);
@@ -1359,6 +1542,7 @@ function resultado() {
   $("rTexto").textContent = `${ac} de ${n} corretas em ${Math.floor(seg / 60)} min ${seg % 60} s. ` + (ac < n ? "Os erros voltam no seu próximo treino." : "Nenhum erro para revisar.");
   const por = {}; pergs.forEach((p, k) => { (por[p.tema] ||= [0, 0])[1]++; if (resp[k].ok) por[p.tema][0]++; });
   $("rTemas").innerHTML = Object.entries(por).map(([t, [a, b]]) => `<li class="row"><span>${t}</span><div class="barra"><i style="width:${a / b * 100}%;background:${a === b ? "var(--ok)" : "var(--bad)"}"></i></div><span class="pct">${a}/${b}</span></li>`).join("");
+  registra(pergs, resp, seg);
   const erros = pergs.map((p, k) => ({ p, r: resp[k] })).filter(x => !x.r.ok);
   $("rRevBox").hidden = !erros.length; $("rTreinar").hidden = !erros.length;
   $("rRev").innerHTML = erros.map(() => `<div><b></b><span></span></div>`).join("");
@@ -1367,37 +1551,79 @@ function resultado() {
 
 /* ---------- notas e foco ---------- */
 $("nTag").innerHTML = ETAPAS.map(e => `<option>${e[0]}</option>`).join("");
-let notas = le("notas", [
-  { t: "LAZY x EAGER", x: "LAZY busca só quando uso. EAGER busca junto, sempre. Cuidado fora da transação.", e: "Spring Boot e JPA" },
-  { t: "Camadas", x: "Controller recebe, Service decide, Repository fala com o banco.", e: "Arquitetura e MVC" }
-]);
+let notas = le("notas", []);
 function pintaNotas() {
   $("listaNotas").innerHTML = notas.length ? notas.map((n, i) => `<div class="nota-item"><b></b><span class="muted"></span><div><span class="etq"></span><button class="btn sm" data-i="${i}">Remover</button></div></div>`).join("") : `<p class="muted" style="margin:0">Nenhuma anotação ainda. Escreva a primeira com suas palavras.</p>`;
   [...$("listaNotas").querySelectorAll(".nota-item")].forEach((d, i) => { d.querySelector("b").textContent = notas[i].t; d.querySelector(".muted").textContent = notas[i].x; d.querySelector(".etq").textContent = notas[i].e; d.querySelector("button").onclick = () => { notas.splice(i, 1); guarda("notas", notas); pintaNotas(); }; });
 }
-$("formNota").onsubmit = e => { e.preventDefault(); notas.unshift({ t: $("nTitulo").value, x: $("nTexto").value, e: $("nTag").value }); guarda("notas", notas); $("formNota").reset(); pintaNotas(); toast("Anotação salva"); };
+$("formNota").onsubmit = e => { e.preventDefault(); notas.unshift({ t: $("nTitulo").value, x: $("nTexto").value, e: $("nTag").value, d: hojeStr() }); guarda("notas", notas); $("formNota").reset(); pintaNotas(); toast("Anotação salva"); };
 pintaNotas();
 let seg = 1500, ft = null;
 const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-$("fIni").onclick = () => { if (ft) { clearInterval(ft); ft = null; $("fIni").textContent = "Continuar"; return; } $("fIni").textContent = "Pausar"; ft = setInterval(() => { seg--; $("foco").textContent = fmt(seg); if (seg <= 0) { clearInterval(ft); ft = null; $("fIni").textContent = "Iniciar"; toast("Pausa de 5 minutos. Bom trabalho!"); seg = 1500; } }, 1000); };
+$("fIni").onclick = () => { if (ft) { clearInterval(ft); ft = null; $("fIni").textContent = "Continuar"; return; } $("fIni").textContent = "Pausar"; ft = setInterval(() => { seg--; $("foco").textContent = fmt(seg); if (seg <= 0) { clearInterval(ft); ft = null; $("fIni").textContent = "Iniciar"; toast("Pausa de 5 minutos. Bom trabalho!"); seg = 1500; PR.min[hojeStr()] = (PR.min[hojeStr()] || 0) + 25; marcaDia(); salvaPR(); } }, 1000); };
+function pintaRev() { const h = hojeStr(), n = notas.filter(x => x.d && [1, 3, 7].includes(diasEntre(x.d, h))).length; $("revHoje").textContent = n ? `${n} ${n === 1 ? "anotação volta" : "anotações voltam"} hoje para revisão (repetição espaçada). Releia sem olhar e veja se lembra.` : notas.length ? "Nenhuma anotação para revisar hoje. Elas voltam 1, 3 e 7 dias depois de escritas." : "Escreva anotações com suas palavras. Elas voltam para revisão depois de 1, 3 e 7 dias."; }
 $("fRes").onclick = () => { clearInterval(ft); ft = null; seg = 1500; $("foco").textContent = fmt(seg); $("fIni").textContent = "Iniciar"; };
 
-/* ---------- evolução ---------- */
-(function () {
-  const v = [42, 48, 45, 55, 58, 57, 61, 66], W = 320, H = 170, x0 = 30, y0 = 12, w = 276, h = 120;
-  const X = i => x0 + i * w / (v.length - 1), Y = n => y0 + h - (n - 30) / 50 * h;
-  let g = [30, 50, 70, 80].map(n => `<line x1="${x0}" x2="${x0 + w}" y1="${Y(n)}" y2="${Y(n)}" stroke="var(--line)"/><text x="${x0 - 6}" y="${Y(n) + 4}" text-anchor="end">${n}%</text>`).join("");
-  const pts = v.map((n, i) => `${X(i)},${Y(n)}`).join(" ");
-  g += `<polygon points="${x0},${y0 + h} ${pts} ${X(7)},${y0 + h}" fill="var(--primary)" opacity=".12"/><polyline points="${pts}" fill="none" stroke="var(--primary)" stroke-width="2.5"/>`;
-  g += v.map((n, i) => i === 7 ? `<circle cx="${X(i)}" cy="${Y(n)}" r="5" fill="var(--primary)"/><text x="${X(i)}" y="${Y(n) - 10}" text-anchor="end" style="fill:var(--fg);font-weight:700">${n}%</text>` : `<circle cx="${X(i)}" cy="${Y(n)}" r="3" fill="var(--primary)"/>`).join("");
-  g += v.map((n, i) => `<text x="${X(i)}" y="${y0 + h + 18}" text-anchor="middle">S${i + 1}</text>`).join("");
-  $("graf").innerHTML = g;
-  $("evEtapas").innerHTML = ETAPAS.filter(e => e[4] > 0).map(e => `<li class="row"><span>${e[0]}</span><div class="barra"><i style="width:${e[4]}%;background:${e[4] < 50 ? "var(--hot)" : "var(--primary)"}"></i></div><span class="pct">${e[4]}%</span></li>`).join("");
-})();
+/* ---------- hoje e evolução (dados reais do aluno) ---------- */
+function pintaHoje() {
+  calcEtapas();
+  const i = ETAPAS.findIndex(e => e[3] === "atual"), n = ETAPAS.length;
+  $("atualNome").textContent = i < 0 ? "a última etapa. Parabéns, você concluiu a trilha" : `${ETAPAS[i][0]} (etapa ${i + 1} de ${n})`;
+  const x = xp(); $("pNivel").innerHTML = `Nível <b>${Math.floor(x / 150) + 1}</b> · ${x} XP`;
+  const sq = sequencia(); $("pSeq").innerHTML = `Sequência <b>${sq} ${sq === 1 ? "dia" : "dias"}</b>`;
+  const h = hojeStr(), feito = [PR.rod.some(r => r.d === h), Object.values(PR.lidas).includes(h), notas.some(nt => nt.d === h)];
+  const aula = i < 0 ? "uma aula" : `a aula "${ETAPAS[i][0]}"`;
+  $("metas").innerHTML = ["Fazer 1 rodada de perguntas", "Estudar " + aula, "Escrever 1 anotação com suas palavras"].map((t, k) => `<label><input type="checkbox" disabled ${feito[k] ? "checked" : ""}> <span></span></label>`).join("");
+  [...$("metas").querySelectorAll("span")].forEach((sp, k) => sp.textContent = ["Fazer 1 rodada de perguntas", "Estudar " + aula, "Escrever 1 anotação com suas palavras"][k]);
+  const fr = temaStats().filter(t => t.pct < 70).slice(0, 3);
+  $("fracos").innerHTML = fr.map(() => `<li class="row"><span></span><div class="barra"><i></i></div><span class="pct"></span></li>`).join("") || `<li class="muted" style="list-style:none;font-size:14.5px"></li>`;
+  if (fr.length) [...$("fracos").children].forEach((li, k) => { li.querySelector("span").textContent = fr[k].tema; const b = li.querySelector("i"); b.style.width = fr[k].pct + "%"; b.style.background = "var(--hot)"; li.querySelector(".pct").textContent = fr[k].pct + "%"; });
+  else $("fracos").firstChild.textContent = totais()[1] ? "Nenhum ponto fraco por enquanto. Continue assim!" : "Faça sua primeira rodada. Depois dela, mostro aqui o que você mais erra.";
+  $("treinarFracos").hidden = !PR.pend.length;
+}
+function pintaEv() {
+  const [ac, tot] = totais();
+  $("sAcerto").textContent = tot ? Math.round(ac / tot * 100) + "%" : "–";
+  const m = minutosSemana(); $("sTempo").textContent = m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}` : m + " min";
+  $("sFeitas").textContent = tot; $("sSeq").textContent = sequencia();
+  // grafico por semana
+  const W = 320, x0 = 30, y0 = 12, w = 276, h = 120, sem = {};
+  if (PR.rod.length) { const d0 = PR.rod[0].d; PR.rod.forEach(r => { const k = Math.floor(diasEntre(d0, r.d) / 7); (sem[k] ||= [0, 0]); sem[k][0] += r.ac; sem[k][1] += r.n; }); }
+  const ks = Object.keys(sem).map(Number).sort((a, b) => a - b).slice(-8), v = ks.map(k => Math.round(sem[k][0] / sem[k][1] * 100));
+  if (!v.length) { $("graf").innerHTML = `<text x="160" y="85" text-anchor="middle" style="fill:var(--muted)">Faça uma rodada para começar o gráfico.</text>`; }
+  else {
+    const X = i => v.length === 1 ? x0 + w / 2 : x0 + i * w / (v.length - 1), Y = n => y0 + h - n / 100 * h;
+    let g = [0, 25, 50, 75, 100].map(n => `<line x1="${x0}" x2="${x0 + w}" y1="${Y(n)}" y2="${Y(n)}" stroke="var(--line)"/><text x="${x0 - 6}" y="${Y(n) + 4}" text-anchor="end">${n}%</text>`).join("");
+    const pts = v.map((n, i) => `${X(i)},${Y(n)}`).join(" ");
+    if (v.length > 1) g += `<polygon points="${X(0)},${y0 + h} ${pts} ${X(v.length - 1)},${y0 + h}" fill="var(--primary)" opacity=".12"/><polyline points="${pts}" fill="none" stroke="var(--primary)" stroke-width="2.5"/>`;
+    g += v.map((n, i) => i === v.length - 1 ? `<circle cx="${X(i)}" cy="${Y(n)}" r="5" fill="var(--primary)"/><text x="${X(i)}" y="${Y(n) - 10}" text-anchor="middle" style="fill:var(--fg);font-weight:700">${n}%</text>` : `<circle cx="${X(i)}" cy="${Y(n)}" r="3" fill="var(--primary)"/>`).join("");
+    g += v.map((n, i) => `<text x="${X(i)}" y="${y0 + h + 18}" text-anchor="middle">S${i + 1}</text>`).join("");
+    $("graf").innerHTML = g;
+  }
+  // diagnostico
+  const ts = temaStats(), fr = ts.filter(t => t.pct < 70);
+  $("dgTxt").textContent = !tot ? "Ainda não há dados." : fr.length ? `Seu ponto mais fraco agora é "${fr[0].tema}" (${fr[0].pct}% de acerto).` : "Você está acertando bem em todos os temas até aqui.";
+  $("dgSub").textContent = !tot ? "Faça a primeira rodada de perguntas e eu mostro aqui onde você mais erra e o que fazer a seguir." : fr.length ? "Próximo passo: releia a aula desse tema, veja a animação e treine seus erros. Eles também voltam sozinhos nas próximas rodadas." : "Siga a trilha e tente a Prova, que tem tempo contado.";
+  $("evTreinar").hidden = !PR.pend.length;
+  // metas da semana
+  const hj = hojeStr(), ult = d => diasEntre(d, hj) >= 0 && diasEntre(d, hj) < 7;
+  const rs = PR.rod.filter(r => ult(r.d)), nl = Object.values(PR.lidas).filter(ult).length, aa = rs.reduce((a, r) => a + r.ac, 0), tt = rs.reduce((a, r) => a + r.n, 0);
+  const metas = [["Fazer 5 rodadas esta semana", Math.min(rs.length, 5) / 5 * 100, `${Math.min(rs.length, 5)}/5`, "var(--n1)"], ["Estudar 3 aulas esta semana", Math.min(nl, 3) / 3 * 100, `${Math.min(nl, 3)}/3`, "var(--n2)"], ["Acertar 70% nas rodadas da semana", tt ? Math.min(100, aa / tt * 100 / 0.7) : 0, tt ? Math.round(aa / tt * 100) + "%" : "0%", "var(--n3)"]];
+  $("metasSem").innerHTML = metas.map((m, k) => `<div class="meta-i" ${k === 0 ? 'style="border:0;padding-top:0"' : ""}><span><b></b><b></b></span><div class="barra"><i style="width:${m[1]}%;--c:${m[3]}"></i></div></div>`).join("");
+  [...$("metasSem").children].forEach((d, k) => { const b = d.querySelectorAll("b"); b[0].textContent = metas[k][0]; b[1].textContent = metas[k][2]; });
+  // etapas
+  calcEtapas();
+  const com = ETAPAS.filter(e => e[4] > 0);
+  $("evEtapas").innerHTML = com.length ? com.map(() => `<li class="row"><span></span><div class="barra"><i></i></div><span class="pct"></span></li>`).join("") : `<li class="muted" style="list-style:none">Estude uma aula e responda as perguntas dela para ver o progresso por etapa.</li>`;
+  if (com.length) [...$("evEtapas").children].forEach((li, k) => { const e = com[k]; li.querySelector("span").textContent = e[0]; const b = li.querySelector("i"); b.style.width = e[4] + "%"; b.style.background = e[4] < 50 ? "var(--hot)" : "var(--primary)"; li.querySelector(".pct").textContent = e[4] + "%"; });
+}
+$("zerar").onclick = () => { if (confirm("Apagar todo o seu progresso, notas e dificuldades deste aparelho e recomeçar do zero?")) { ["vistas", "notas", "dif", "carreira", "prog"].forEach(k => guarda(k, undefined)); location.hash = ""; location.reload(); } };
+function refresca(v) { if (v === "hoje") pintaHoje(); else if (v === "trilha") pintaTrilha(); else if (v === "evolucao") pintaEv(); else if (v === "notas") pintaRev(); }
+
 
 /* ---------- carreira e ia ---------- */
 const CHECK = ["Perfil do GitHub com foto e apresentação", "1 projeto no portfólio com README explicando como rodar", "Currículo de 1 página", "LinkedIn atualizado", "Treinar 10 perguntas básicas de entrevista", "Treinar como contar um bug que você resolveu", "Praticar um teste técnico com tempo"];
-let feitos = le("carreira", [true, false, false, false, false, false, false]);
+let feitos = le("carreira", []);
 function pintaCheck() {
   $("cLista").innerHTML = CHECK.map((c, i) => `<label style="display:flex;gap:10px;align-items:center;padding:6px 0"><input type="checkbox" data-i="${i}" ${feitos[i] ? "checked" : ""} style="width:20px;height:20px;accent-color:var(--primary)"><span>${c}</span></label>`).join("");
   $("cLista").querySelectorAll("input").forEach(c => c.onchange = () => { feitos[c.dataset.i] = c.checked; guarda("carreira", feitos); pintaCheck(); });
@@ -1471,7 +1697,7 @@ $("xAval").onclick = () => {
 
 /* ---------- dificuldades ---------- */
 const SIT = [["Nova", "var(--n3)"], ["Melhorando", "var(--n4)"], ["Superada", "var(--n1)"]];
-let difs = le("dif", [{ t: "Confundo LAZY e EAGER", s: 1 }, { t: "Laço dentro de laço", s: 0 }, { t: "Quando usar interface ou classe abstrata", s: 0 }]);
+let difs = le("dif", []);
 function pintaDif() {
   $("difLista").innerHTML = difs.map(() => `<div class="dif"><span></span><button class="sit"></button><div class="a"><button class="btn sm aju">Montar pedido para a IA</button><button class="btn sm rem">Remover</button></div></div>`).join("") || `<p class="muted" style="margin:0">Nada por aqui. Anote o que está travando.</p>`;
   [...$("difLista").querySelectorAll(".dif")].forEach((d, i) => {

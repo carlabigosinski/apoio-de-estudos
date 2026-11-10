@@ -293,6 +293,13 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
 .hbody .l { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; color: var(--nc); }
 .hbody p { margin: 2px 0 0; font-size: 15.5px; }
 @media (max-width: 720px) { .familias { grid-template-columns: repeat(2, 1fr); } .guia { grid-template-columns: 1fr; } }
+ .boas { position: fixed; inset: 0; z-index: 50; background: var(--grad); display: grid; place-items: center; overflow: auto; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.boas-in { background: var(--surface); color: var(--fg); border-radius: 18px; max-width: 480px; width: 100%; padding: 24px; display: grid; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.boas-in h1 { font-family: var(--font-display); font-size: 28px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.boas-in p, .boas-in ul { margin: 0; }
+.boas-in ul { padding-left: 20px; display: grid; gap: 6px; }
+.boas-in input { font: inherit; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); min-width: 0; }
+.btn.perigo { background: var(--bad); color: #fff; border-color: var(--bad); }
 </style>
 </head>
 <body>
@@ -307,6 +314,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
   <main class="view" id="v-hoje">
     <section class="hero">
       <div>
+        <p id="olaNome" style="margin:0 0 4px;font-weight:700;color:var(--primary)"></p>
         <h1>Aprenda backend <span class="gt">errando menos</span> a cada rodada.</h1>
         <p class="muted">Você está em <b id="atualNome"></b>. Continue de onde parou ou treine o que mais erra.</p>
       </div>
@@ -334,6 +342,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
       </div>
     </div>
     <button class="card guia n3 irHttp"><span class="nums n1"><span style="--nc:var(--n1)">200</span><span style="--nc:var(--n1)">201</span><span style="--nc:var(--n4)">404</span><span style="--nc:var(--n3)">500</span></span><span><b>Guia dos códigos HTTP</b><span class="muted">O que cada número significa, quando aparece e como resolver.</span></span></button>
+    <div class="card" style="margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="muted" style="flex:1;min-width:200px;font-size:14.5px">Quer apagar tudo o que estudou neste aparelho e voltar às boas-vindas?</span><button class="btn sm" id="zerar2">Zerar tudo</button></div>
   </main>
 
   <!-- TRILHA -->
@@ -531,7 +540,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     </div>
     <h2 class="sec">Acerto por etapa</h2>
     <div class="card"><ul class="limpa" id="evEtapas"></ul></div>
-    <div class="card" style="margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="muted" style="flex:1;min-width:200px;font-size:14.5px">Seu progresso fica salvo só neste aparelho. Quer começar de novo?</span><button class="btn sm" id="zerar">Recomeçar do zero</button></div>
+    <div class="card" style="margin-top:18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="muted" style="flex:1;min-width:200px;font-size:14.5px">Seu progresso fica salvo só neste aparelho. Quer começar de novo?</span><button class="btn sm" id="zerar">Zerar tudo</button></div>
     <h2 class="sec">Métodos de estudo que o app usa</h2>
     <div class="metodos">
       <div class="card metodo"><h3>Recuperação ativa</h3><p>Responder antes de reler fixa mais do que só ler.</p><small>No app: quiz antes da aula.</small></div>
@@ -550,6 +559,21 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
   </main>
 </div>
 
+<div class="boas" id="boas" hidden role="dialog" aria-modal="true" aria-labelledby="boasT">
+  <div class="boas-in">
+    <div class="marca"><i>&lt;/&gt;</i> Apoio de Estudos</div>
+    <h1 id="boasT">Boas-vindas! Vamos aprender a programar, do zero.</h1>
+    <p>Aqui você estuda Java e backend um passo de cada vez, com palavras simples, animações e exemplos de código coloridos.</p>
+    <ul>
+      <li>Siga a <b>trilha</b> em ordem: do primeiro conceito até a primeira vaga.</li>
+      <li>Treine com <b>perguntas</b> (Treino com dicas e Prova com tempo). O que você errar volta para você revisar.</li>
+      <li>Aprenda a <b>conversar com a IA</b> e a resolver desafios de lógica.</li>
+    </ul>
+    <label class="campo">Como posso te chamar? (opcional)<input id="boasNome" type="text" maxlength="30" autocomplete="given-name" placeholder="Seu nome"></label>
+    <button class="btn p" id="boasIr">Começar do zero</button>
+    <small class="muted">Seu progresso fica salvo só neste aparelho. Você pode zerar tudo quando quiser.</small>
+  </div>
+</div>
 <nav class="tabs" id="tabs" aria-label="Seções">
   <button data-v="hoje"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Hoje</button>
   <button data-v="trilha"><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="6" cy="19" r="2"/><path d="M8 5h6a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8h0"/></svg>Trilha</button>
@@ -569,8 +593,8 @@ function guarda(k, v) { try { v === undefined ? localStorage.removeItem(k) : loc
 function le(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 
 /* ---------- progresso do aluno (começa zerado em cada aparelho) ---------- */
-const VER = 3;
-(function () { if (le("ver", 0) !== VER) { ["vistas", "notas", "dif", "carreira", "prog"].forEach(k => guarda(k, undefined)); guarda("ver", VER); } })();
+const VER = 4;
+(function () { if (le("ver", 0) !== VER) { ["vistas", "notas", "dif", "carreira", "prog", "perfil"].forEach(k => guarda(k, undefined)); guarda("ver", VER); } })();
 const fmtData = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 const hojeStr = () => fmtData(new Date());
 const diasEntre = (a, b) => Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000);
@@ -1904,6 +1928,7 @@ $("fRes").onclick = () => { clearInterval(ft); ft = null; seg = 1500; $("foco").
 /* ---------- hoje e evolução (dados reais do aluno) ---------- */
 function pintaHoje() {
   calcEtapas();
+  $("olaNome").textContent = PERFIL && PERFIL.nome ? `Olá, ${PERFIL.nome}!` : "Olá!";
   const i = ETAPAS.findIndex(e => e[3] === "atual"), n = ETAPAS.length;
   $("atualNome").textContent = i < 0 ? "a última etapa. Parabéns, você concluiu a trilha" : `${ETAPAS[i][0]} (etapa ${i + 1} de ${n})`;
   const x = xp(); $("pNivel").innerHTML = `Nível <b>${Math.floor(x / 150) + 1}</b> · ${x} XP`;
@@ -1954,7 +1979,14 @@ function pintaEv() {
   $("evEtapas").innerHTML = com.length ? com.map(() => `<li class="row"><span></span><div class="barra"><i></i></div><span class="pct"></span></li>`).join("") : `<li class="muted" style="list-style:none">Estude uma aula e responda as perguntas dela para ver o progresso por etapa.</li>`;
   if (com.length) [...$("evEtapas").children].forEach((li, k) => { const e = com[k]; li.querySelector("span").textContent = e[0]; const b = li.querySelector("i"); b.style.width = e[4] + "%"; b.style.background = e[4] < 50 ? "var(--hot)" : "var(--primary)"; li.querySelector(".pct").textContent = e[4] + "%"; });
 }
-$("zerar").onclick = () => { if (confirm("Apagar todo o seu progresso, notas e dificuldades deste aparelho e recomeçar do zero?")) { ["vistas", "notas", "dif", "carreira", "prog"].forEach(k => guarda(k, undefined)); location.hash = ""; location.reload(); } };
+function zeraTudo() { ["vistas", "notas", "dif", "carreira", "prog", "perfil"].forEach(k => guarda(k, undefined)); try { history.replaceState(null, "", location.pathname); } catch (e) {} location.reload(); }
+function armaZerar(b) { b.onclick = () => { if (b.dataset.armado) return zeraTudo(); b.dataset.armado = "1"; const o = b.textContent; b.textContent = "Toque de novo para apagar tudo"; b.classList.add("perigo"); setTimeout(() => { delete b.dataset.armado; b.textContent = o; b.classList.remove("perigo"); }, 4000); }; }
+armaZerar($("zerar")); armaZerar($("zerar2"));
+let PERFIL = le("perfil", null);
+function mostraBoas() { $("boas").hidden = !!PERFIL; document.body.style.overflow = PERFIL ? "" : "hidden"; if (!PERFIL) $("boasNome").focus(); }
+function comecaZerado() { PERFIL = { nome: $("boasNome").value.trim().slice(0, 30), desde: hojeStr() }; guarda("perfil", PERFIL); mostraBoas(); go("hoje"); pintaHoje(); window.scrollTo(0, 0); }
+$("boasIr").onclick = comecaZerado;
+$("boasNome").onkeydown = e => { if (e.key === "Enter") comecaZerado(); };
 function refresca(v) { if (v === "hoje") pintaHoje(); else if (v === "trilha") pintaTrilha(); else if (v === "evolucao") pintaEv(); else if (v === "notas") pintaRev(); }
 
 
@@ -2096,6 +2128,7 @@ $("httpQuiz").onclick = () => comecar(PERGUNTAS.map((p, k) => p.tema === "Status
 $("curlEx").innerHTML = "";
 
 /* início */
+mostraBoas();
 const h0 = location.hash.slice(1), inicio = TABS.includes(h0) || h0 === "http" ? h0 : "hoje";
 go(inicio, false); if (h0 !== inicio) { try { history.replaceState(null, "", "#" + inicio); } catch (e) {} }
 if (inicio === "http") abreHttp();

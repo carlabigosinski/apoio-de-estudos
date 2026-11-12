@@ -356,6 +356,16 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
         <small class="muted" id="dicaModo" style="display:block;margin-top:8px"></small>
       </div>
     </section>
+    <div class="card" id="revCard" style="margin-bottom:18px;border-left:4px solid var(--primary)">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px">
+          <div><b style="font-family:var(--font-display);font-size:18px">Revisão espaçada</b></div>
+          <p class="muted" id="revTxt" style="margin:4px 0 0;font-size:14.5px"></p>
+          <p class="muted" style="margin:4px 0 0;font-size:13px">Acertou: o intervalo cresce (1, 3, 7, 14 dias). Errou: volta ao começo.</p>
+        </div>
+        <button class="btn p" id="revIr">Revisar agora</button>
+      </div>
+    </div>
     <div class="grid2">
       <div>
         <h2 class="sec">Meta de hoje</h2>
@@ -631,8 +641,17 @@ const VER = 4;
 const fmtData = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 const hojeStr = () => fmtData(new Date());
 const diasEntre = (a, b) => Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000);
-let PR = Object.assign({ resp: {}, rod: [], lidas: {}, dias: [], min: {}, pend: [] }, le("prog", {}));
+let PR = Object.assign({ resp: {}, rod: [], lidas: {}, dias: [], min: {}, pend: [], rev: {} }, le("prog", {}));
 const salvaPR = () => guarda("prog", PR);
+const INT_REV = [1, 3, 7, 14];   // dias entre as revisões
+const somaDias = (str, n) => { const d = new Date(str + "T12:00:00"); d.setDate(d.getDate() + n); return fmtData(d); };
+function agendaRev(idx, ok) {
+  PR.rev ||= {}; const h = hojeStr(), r = PR.rev[idx];
+  if (!ok) { PR.rev[idx] = { b: 0, d: somaDias(h, INT_REV[0]) }; return; }   // errou: volta ao começo
+  if (!r || r.d > h) return;                                                  // ainda não era a hora
+  r.b++; if (r.b >= INT_REV.length) delete PR.rev[idx]; else r.d = somaDias(h, INT_REV[r.b]);
+}
+const revDevidas = () => Object.entries(PR.rev || {}).filter(([, r]) => r.d <= hojeStr()).map(([i]) => +i).filter(i => PERGUNTAS[i]);
 function marcaDia() { const h = hojeStr(); if (!PR.dias.includes(h)) PR.dias.push(h); }
 function sequencia() { const set = new Set(PR.dias), d = new Date(); if (!set.has(fmtData(d))) d.setDate(d.getDate() - 1); let n = 0; while (set.has(fmtData(d))) { n++; d.setDate(d.getDate() - 1); } return n; }
 function totais() { let a = 0, t = 0; Object.values(PR.resp).forEach(r => { a += r[0]; t += r[0] + r[1]; }); return [a, t]; }
@@ -655,7 +674,7 @@ function registra(pergs, resp, seg) {
   const h = hojeStr(); let ac = 0;
   pergs.forEach((p, k) => {
     const r = (PR.resp[p.idx] ||= [0, 0]); const ok = resp[k].ok;
-    ok ? r[0]++ : r[1]++; if (ok) ac++;
+    ok ? r[0]++ : r[1]++; if (ok) ac++; agendaRev(p.idx, ok);
     PR.pend = PR.pend.filter(i => i !== p.idx); if (!ok) PR.pend.push(p.idx);
   });
   PR.rod.push({ d: h, ac, n: pergs.length, modo: modo });
@@ -721,6 +740,10 @@ const MODULOS = [
     ["Spring Boot e JPA", "Beans, Hibernate, LAZY e EAGER", "", 38, "lazy"],
     ["Pedidos e entregas", "Etapas, snapshot, entrega agendada, cancelamento", "", 33, "ped"],
     ["Testes", "Unitários e de integração", "", 29, "test"] ] },
+  { n: "Java moderno e SQL", nv: "n2", niv: "Intermediário", it: [
+    ["Streams, lambdas e Optional", "filtrar, transformar e somar listas sem laço; lidar com valores que podem não existir", "", 0, "streams"],
+    ["SQL avançado", "INNER x LEFT JOIN, GROUP BY, HAVING, NULL e relação N:N", "", 0, "sqlavanc"],
+    ["Relacionamentos no JPA", "@ManyToOne, @OneToMany, mappedBy, cascade e orphanRemoval", "", 0, "jparel"] ] },
   { n: "Por baixo dos panos", nv: "n3", niv: "Avançado", it: [
     ["Da URL à resposta", "O que acontece quando você abre um site: DNS, TCP, HTTPS, servidor e banco", "", 0, "url"],
     ["O que o Spring faz ao iniciar", "Do main() até a API pronta: beans, Tomcat, Flyway", "", 0, "boot"],
@@ -1433,6 +1456,131 @@ Object.assign(MAIS, {
     termos: [["CRUD", "Create, Read, Update, Delete: as 4 operações básicas."], ["Repository", "Repositório: guarda e busca os dados."], ["Service", "Serviço: onde ficam as regras de negócio."], ["Interface", "Contrato: o que deve existir, sem dizer como."], ["Dependency inversion", "Depender de contratos (interfaces), não de detalhes."], ["Optional", "Caixinha que diz que o valor pode não existir."], ["In-memory", "Em memória: os dados somem quando o programa fecha."], ["Id", "Identificador único de cada registro."], ["Mock / Fake", "Versão falsa de uma peça, usada em testes."], ["Layered architecture", "Arquitetura em camadas: cada camada com uma função."]],
     pontos: ["CRUD: cadastrar, ler, atualizar e remover.", "Repositório guarda; Service decide; Main (Controller) pede.", "O Service depende da interface, não da implementação.", "Map<Long, Cliente> com um contador de ids faz o papel do banco.", "É o mesmo desenho do Spring: Controller, Service, Repository."] }
 });
+
+FLOWS.streams = { titulo: "Um stream: da lista ao resultado", nos: [["Lista", "7, 4, 9, 5, 10"], ["filter", "nota >= 6"], ["map", "nota * 10"], ["toList()", "operação final"], ["Resultado", "70, 90, 100"]],
+  passos: [
+    [0, "Você começa com uma lista de notas e chama <b>.stream()</b>. A lista original não será alterada."],
+    [1, "O <b>filter</b> deixa passar só o que cumpre a condição: 7, 9 e 10. Até aqui ainda <b>nada foi executado</b>."],
+    [2, "O <b>map</b> transforma cada item que passou: 70, 90 e 100. Também fica só combinado."],
+    [3, "O <b>toList()</b> é a operação final: só agora o Java percorre a lista e aplica tudo."],
+    [4, "O resultado é uma <b>lista nova</b>. A lista original continua com os 5 valores.", "volta"] ] };
+Object.assign(MAIS, {
+  streams: { resumo: "A forma moderna de trabalhar com listas: filtrar, transformar, somar e achar itens sem escrever laços, e o Optional para valores que podem não existir.", flow: "streams", texto: [
+    `Até agora você percorreu listas com for. Os streams (fluxos) deixam você descrever o que quer, em vez de como fazer: "das notas, fique só com as maiores que 6 e some". Um stream não guarda dados nem altera a lista original: ele é uma esteira por onde os itens passam por etapas e saem em um resultado.`,
+    `As etapas do meio se chamam operações intermediárias, como filter (filtra), map (transforma cada item) e sorted (ordena). A etapa final se chama operação terminal, como toList(), count(), sum(), findFirst() e anyMatch(). Pegadinha importante: as intermediárias são preguiçosas e não fazem nada sozinhas. O stream só roda quando chega a operação terminal. E um stream só pode ser usado uma vez.`,
+    `Para dizer o que fazer em cada etapa usa-se a lambda: uma função curta escrita no lugar. A forma n -> n >= 6 significa "dado um n, devolva se n é maior ou igual a 6". Quando a lambda só chama um método, dá para abreviar com a referência de método: Cliente::getNome é o mesmo que c -> c.getNome().`,
+    `O Optional é uma caixinha que diz, no próprio tipo, que o valor pode não existir. Operações como findFirst() devolvem Optional em vez de null, o que evita o NullPointerException. Em vez de chamar get() (que lança exceção se estiver vazio), use orElse (valor padrão), orElseThrow (lança a sua exceção) ou map (transforma se existir). É o que o findById do Spring Data devolve.`],
+    codigos: [["Filtrar.java", `List<Integer> notas = List.of(7, 4, 9, 5, 10);
+
+List<Integer> aprovadas = notas.stream()
+    .filter(n -> n >= 6)        // fica 7, 9, 10
+    .toList();
+
+int soma = notas.stream().mapToInt(Integer::intValue).sum();   // 35
+long qtd = notas.stream().filter(n -> n >= 6).count();           // 3`],
+      ["Transformar.java", `List<String> nomes = clientes.stream()
+    .map(Cliente::getNome)      // de Cliente para String
+    .sorted()                   // em ordem alfabética
+    .toList();
+
+boolean temAna = clientes.stream().anyMatch(c -> c.getNome().equals("Ana"));`],
+      ["Optional.java", `Optional<Cliente> achado = clientes.stream()
+    .filter(c -> c.getEmail().equals("ana@email.com"))
+    .findFirst();                                   // pode não existir
+
+String nome = achado.map(Cliente::getNome).orElse("não encontrado");
+
+Cliente c = achado.orElseThrow(
+    () -> new Erros.NaoEncontrado("Cliente não existe"));   // vira 404`],
+      ["Preguica.java", `// ERRADO: sem operação terminal, nada acontece
+notas.stream().filter(n -> n >= 6);
+
+// CERTO: o toList() dispara o processamento
+List<Integer> ok = notas.stream().filter(n -> n >= 6).toList();`]],
+    termos: [["Stream", "Fluxo: esteira por onde os itens de uma coleção passam por etapas."], ["Lambda", "Função curta escrita no lugar, como n -> n >= 6."], ["Method reference", "Referência de método: abreviação como Cliente::getNome."], ["filter", "Deixa passar só os itens que cumprem a condição."], ["map", "Transforma cada item em outra coisa."], ["Intermediate operation", "Operação intermediária: preguiçosa, só roda com a terminal."], ["Terminal operation", "Operação terminal: dispara o processamento, como toList() e count()."], ["Optional", "Caixinha que diz que o valor pode não existir."], ["orElse / orElseThrow", "Valor padrão se vazio / lança a sua exceção se vazio."], ["Functional interface", "Interface com um único método, que uma lambda pode implementar."]],
+    pontos: ["Stream descreve o que fazer; a lista original não muda.", "filter e map são preguiçosos: só rodam com uma operação terminal.", "Lambda: n -> n >= 6. Referência: Cliente::getNome.", "Optional evita null: use orElse ou orElseThrow, e evite o get() solto."] },
+  sqlavanc: { resumo: "O SQL que aparece no dia a dia e em entrevista: juntar tabelas com INNER e LEFT JOIN, contar e somar com GROUP BY, filtrar grupos com HAVING, tratar NULL e ligar tabelas N:N.", texto: [
+    `No módulo de banco você viu o JOIN simples. Na prática, a pergunta é: o que fazer com quem não tem par? O INNER JOIN traz só as linhas que têm correspondência nas duas tabelas. O LEFT JOIN traz todas as linhas da tabela da esquerda e, onde não houver par, preenche com NULL. Por isso, para listar todos os clientes, inclusive os sem endereço, use LEFT JOIN.`,
+    `Para resumir dados usamos funções de agregação: COUNT (conta), SUM (soma), AVG (média), MIN e MAX. Junto com GROUP BY elas respondem perguntas como "quantos endereços cada cliente tem?". Todo campo do SELECT que não é agregado precisa estar no GROUP BY. Repare: COUNT(*) conta linhas, enquanto COUNT(coluna) ignora os NULL, o que é útil com o LEFT JOIN.`,
+    `WHERE e HAVING parecem iguais, mas rodam em momentos diferentes. O WHERE filtra as linhas antes de agrupar. O HAVING filtra os grupos depois de agrupar, e é o único que enxerga o resultado de um COUNT ou SUM. Outra pegadinha clássica: NULL significa "desconhecido" e nunca é igual a nada, nem a outro NULL. Por isso se escreve coluna IS NULL, e nunca coluna = NULL.`,
+    `Quando dois lados têm "muitos para muitos" (um pedido tem vários produtos, e um produto está em vários pedidos), é preciso uma tabela de junção, que guarda duas chaves estrangeiras (e, se precisar, dados da ligação, como a quantidade). A ideia por trás é a normalização: cada fato fica em um único lugar, em vez de ser copiado em várias linhas. Lembre também de criar índice nas chaves estrangeiras usadas em JOIN.`],
+    codigos: [["LeftJoin.sql", `-- INNER: só quem tem endereço
+SELECT c.nome, e.rua
+FROM cliente c
+INNER JOIN endereco e ON e.cliente_id = c.id;
+
+-- LEFT: todos os clientes; rua fica NULL para quem não tem endereço
+SELECT c.nome, e.rua
+FROM cliente c
+LEFT JOIN endereco e ON e.cliente_id = c.id;`],
+      ["GroupBy.sql", `-- quantos endereços cada cliente tem (inclusive zero)
+SELECT c.id, c.nome, COUNT(e.id) AS qtd_enderecos
+FROM cliente c
+LEFT JOIN endereco e ON e.cliente_id = c.id
+GROUP BY c.id, c.nome
+ORDER BY qtd_enderecos DESC;
+
+-- só quem tem mais de 1 endereço: HAVING filtra o grupo
+SELECT c.nome, COUNT(e.id) AS qtd
+FROM cliente c
+JOIN endereco e ON e.cliente_id = c.id
+GROUP BY c.nome
+HAVING COUNT(e.id) > 1;`],
+      ["Null.sql", `SELECT * FROM cliente WHERE email = NULL;     -- ERRADO: nunca devolve nada
+SELECT * FROM cliente WHERE email IS NULL;     -- CERTO
+SELECT * FROM cliente WHERE email IS NOT NULL;`],
+      ["NparaN.sql", `-- um pedido tem vários produtos; um produto está em vários pedidos
+CREATE TABLE pedido_item (
+    pedido_id  BIGINT REFERENCES pedido(id),
+    produto_id BIGINT REFERENCES produto(id),
+    quantidade INT NOT NULL,
+    PRIMARY KEY (pedido_id, produto_id)   -- chave composta
+);`]],
+    termos: [["INNER JOIN", "Junta só as linhas que têm par nas duas tabelas."], ["LEFT JOIN", "Traz todas da esquerda; sem par, as colunas da direita ficam NULL."], ["Aggregate function", "Função de agregação: COUNT, SUM, AVG, MIN, MAX."], ["GROUP BY", "Agrupa as linhas para calcular um resultado por grupo."], ["HAVING", "Filtra os grupos depois do GROUP BY. O WHERE filtra as linhas antes."], ["NULL", "Valor desconhecido. Compare com IS NULL, nunca com =."], ["Junction table", "Tabela de junção: liga duas tabelas em uma relação N:N."], ["Composite key", "Chave composta: primary key feita de mais de uma coluna."], ["Normalization", "Normalização: cada informação em um só lugar, sem repetição."], ["1:N / N:N", "Um para muitos (cliente e endereços) / muitos para muitos (pedidos e produtos)."]],
+    pontos: ["INNER JOIN só traz quem tem par; LEFT JOIN traz todos da esquerda.", "COUNT, SUM e AVG com GROUP BY resumem dados por grupo.", "WHERE filtra linhas antes; HAVING filtra grupos depois.", "NULL só se testa com IS NULL. N:N precisa de tabela de junção."] },
+  jparel: { resumo: "Como o JPA liga as classes: @ManyToOne e @OneToMany, quem é o dono da chave estrangeira (mappedBy), cascade, orphanRemoval e as armadilhas dos relacionamentos.", texto: [
+    `No banco, o endereço guarda a chave estrangeira cliente_id. Nas classes Java, o JPA precisa saber como isso se reflete. O lado que tem a chave estrangeira é o @ManyToOne (muitos endereços para um cliente), com o @JoinColumn dizendo o nome da coluna. O outro lado é o @OneToMany: um cliente com a sua lista de endereços.`,
+    `Quando os dois lados existem (bidirecional), surge o mappedBy. Ele diz: "quem manda na chave estrangeira é o outro lado; aqui só estou espelhando". Sem ele, o JPA pensa que são duas relações diferentes e cria uma tabela extra. Por isso, ao adicionar um endereço, mantenha os dois lados em sincronia em um método do Cliente: enderecos.add(e) e e.setCliente(this).`,
+    `O cascade manda a operação descer para os filhos: com CascadeType.ALL, salvar o cliente salva os endereços junto, e apagar o cliente apaga os endereços. O orphanRemoval = true vai além: se você remove um endereço da lista do cliente, o JPA apaga a linha do banco ao fim da transação. É exatamente assim que o cadastro de clientes desta trilha remove endereços, sem um repositório próprio.`,
+    `Três armadilhas. Primeira: @OneToMany já é LAZY por padrão, mas @ManyToOne é EAGER por padrão, então declare fetch = LAZY nele para evitar consultas escondidas (e o N+1). Segunda: não use cascade REMOVE em relações N:N, porque apagar um lado pode levar embora dados compartilhados. Terceira: devolver a entidade direto no JSON de uma relação bidirecional gera um laço infinito (cliente tem endereço, que tem cliente...). Use DTO. Para N:N existe @ManyToMany, mas se a ligação tiver dados próprios (como a quantidade), prefira uma entidade de junção, como o ItemPedido.`],
+    codigos: [["Endereco.java (lado dono)", `@Entity
+public class Endereco {
+    @Id @GeneratedValue
+    private Long id;
+    private String rua;
+
+    @ManyToOne(fetch = FetchType.LAZY)       // padrão seria EAGER
+    @JoinColumn(name = "cliente_id")         // a coluna da chave estrangeira
+    private Cliente cliente;
+}`],
+      ["Cliente.java (lado inverso)", `@Entity
+public class Cliente {
+    @Id @GeneratedValue
+    private Long id;
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Endereco> enderecos = new ArrayList<>();
+
+    public void adicionar(Endereco e) {      // mantém os dois lados em sincronia
+        enderecos.add(e);
+        e.setCliente(this);
+    }
+}`],
+      ["Uso.java", `Cliente c = new Cliente();
+c.adicionar(new Endereco("Rua A"));
+repository.save(c);                  // cascade: salva o cliente e o endereço
+
+c.getEnderecos().remove(0);          // orphanRemoval: o endereço é apagado do banco
+// (dentro de uma transação)`],
+      ["ManyToMany.java", `// funciona, mas sem espaço para dados da ligação (ex.: quantidade)
+@ManyToMany
+@JoinTable(name = "pedido_produto",
+    joinColumns = @JoinColumn(name = "pedido_id"),
+    inverseJoinColumns = @JoinColumn(name = "produto_id"))
+private List<Produto> produtos;`]],
+    termos: [["@ManyToOne", "Muitos para um: o lado que tem a chave estrangeira."], ["@OneToMany", "Um para muitos: o lado que tem a lista."], ["@JoinColumn", "Diz o nome da coluna da chave estrangeira."], ["mappedBy", "Marca o lado inverso: quem manda na chave estrangeira é o outro lado."], ["Bidirectional", "Bidirecional: os dois lados se enxergam (cliente tem endereços, endereço tem cliente)."], ["cascade", "Propaga a operação (salvar, apagar) do pai para os filhos."], ["orphanRemoval", "Apaga do banco o filho removido da lista do pai."], ["@ManyToMany", "Muitos para muitos, com tabela de junção."], ["Owner side", "Lado dono: o que controla a chave estrangeira."], ["Infinite recursion", "Laço infinito ao converter para JSON uma relação bidirecional. Use DTO."]],
+    pontos: ["@ManyToOne fica no lado da chave estrangeira; @OneToMany é o lado da lista.", "mappedBy marca o lado inverso e evita uma tabela extra.", "cascade propaga salvar/apagar; orphanRemoval apaga quem saiu da lista.", "@ManyToOne é EAGER por padrão: declare LAZY. Devolva DTO, não a entidade."] }
+});
 Object.entries(MAIS).forEach(([k, v]) => { AULAS[k] = Object.assign(AULAS[k] || {}, v); });
 
 const Q = (tema, q, op, c, por, ana, dica, aula, code) => ({ tema, q, op, c, por, ana, dica, aula, code });
@@ -1642,6 +1790,22 @@ PERGUNTAS.push(
   Q("Projeto 3: Cadastro de clientes", "Por que o ClienteService depende da interface ClienteRepositorio e não da implementação?", ["Para o código ficar maior", "Para poder trocar a forma de guardar (memória, arquivo, banco) sem mudar o Service", "Porque interfaces são mais rápidas", "Não há motivo"], 1, "Depender do contrato deixa as peças trocáveis e testáveis. É o D do SOLID.", "É usar a tomada padrão: qualquer aparelho novo encaixa.", "Contrato, não detalhe.", "projcrud"),
   Q("Projeto 3: Cadastro de clientes", "O que CRUD significa?", ["Create, Read, Update, Delete", "Copy, Run, Undo, Debug", "Class, Record, Update, Data", "Check, Run, Use, Deploy"], 0, "Cadastrar, ler, atualizar e remover: as 4 operações básicas de quase todo sistema.", "As quatro coisas que se faz com uma ficha de cadastro.", "Criar, ler, atualizar, apagar.", "projcrud"),
   Q("Projeto 3: Cadastro de clientes", "Na sua API Spring, qual status HTTP corresponde ao e-mail já cadastrado (regra do Service)?", ["404", "409", "201", "500"], 1, "409 Conflict: o pedido entra em conflito com o que já existe. Já o 404 seria para um id que não existe.", "É tentar cadastrar um CPF que já está na lista.", "Conflito.", "projcrud")
+);
+
+
+PERGUNTAS.push(
+  Q("Streams e Optional", "Quantos itens tem o resultado?", ["2", "3", "5", "Dá erro"], 1, "O filter deixa passar 7, 9 e 10 (maiores ou iguais a 6). O count devolve 3.", "É uma peneira: fica só o que passa pela condição.", "Conte quem tem nota 6 ou mais.", "streams", `List<Integer> notas = List.of(7, 4, 9, 5, 10);\nlong r = notas.stream().filter(n -> n >= 6).count();`),
+  Q("Streams e Optional", "O que acontece neste código?", ["Imprime a lista filtrada", "Nada: falta uma operação terminal, então o filter nunca roda", "Dá erro de compilação", "Apaga os itens menores que 6"], 1, "filter e map são intermediárias e preguiçosas. Só uma operação terminal (toList, count, sum...) dispara o processamento.", "É montar a esteira da fábrica e esquecer de ligar o botão.", "Falta a etapa final.", "streams", `notas.stream().filter(n -> n >= 6);`),
+  Q("Streams e Optional", "Qual método do Optional devolve um valor padrão quando ele está vazio?", ["get()", "orElse()", "isEmpty()", "map()"], 1, "orElse(valor) devolve o conteúdo ou o valor padrão. O get() solto lança exceção se estiver vazio.", "É dizer: se não tiver o prato do dia, traga o prato padrão.", "Else quer dizer senão.", "streams"),
+  Q("Streams e Optional", "O stream altera a lista original?", ["Sim, remove o que não passou no filter", "Não, ele produz um resultado novo", "Só se usar map", "Só se a lista for ordenada"], 1, "O stream não guarda nem altera os dados: lê a lista e entrega um resultado novo.", "É fotocopiar um documento e riscar a cópia, sem mexer no original.", "Pense em cópia.", "streams"),
+  Q("SQL avançado", "Qual JOIN traz também os clientes que não têm nenhum endereço?", ["INNER JOIN", "LEFT JOIN (com cliente à esquerda)", "Nenhum JOIN faz isso", "DELETE JOIN"], 1, "O LEFT JOIN mantém todas as linhas da esquerda; onde não há par, as colunas da direita ficam NULL.", "É a lista de presença: aparecem todos os alunos, mesmo os que não entregaram o trabalho.", "Esquerda manda.", "sqlavanc"),
+  Q("SQL avançado", "Qual cláusula filtra os grupos depois do GROUP BY, como 'só quem tem mais de 1 endereço'?", ["WHERE", "HAVING", "ORDER BY", "LIMIT"], 1, "O WHERE filtra linhas antes de agrupar. O HAVING filtra grupos e enxerga COUNT e SUM.", "É escolher as turmas (grupos) que têm mais de 30 alunos, não os alunos.", "Depois de agrupar.", "sqlavanc"),
+  Q("SQL avançado", "Como se testa corretamente se a coluna email é nula?", ["WHERE email = NULL", "WHERE email IS NULL", "WHERE email == null", "WHERE email EQUALS NULL"], 1, "NULL é desconhecido e nunca é igual a nada. O teste correto é IS NULL.", "Não dá para perguntar se 'não sei' é igual a 'não sei'.", "É uma palavra, não um sinal.", "sqlavanc"),
+  Q("SQL avançado", "Um pedido tem vários produtos e um produto está em vários pedidos. Como modelar no banco?", ["Uma coluna com a lista de ids", "Uma tabela de junção com duas chaves estrangeiras", "Repetir o produto dentro do pedido", "Não é possível"], 1, "A tabela de junção (ex.: pedido_item) guarda pedido_id e produto_id, e ainda dados da ligação, como a quantidade.", "É a comanda do restaurante: liga mesa e prato, com a quantidade.", "Uma terceira tabela.", "sqlavanc"),
+  Q("Relacionamentos JPA", "Cliente tem vários Endereco. Em qual classe fica o @ManyToOne com o @JoinColumn?", ["Cliente", "Endereco, porque é o lado da chave estrangeira cliente_id", "Nas duas", "Em nenhuma"], 1, "O @ManyToOne fica no lado 'muitos', que guarda a chave estrangeira.", "O recibo (endereço) aponta para o cliente, e não o contrário.", "Quem guarda a coluna cliente_id?", "jparel"),
+  Q("Relacionamentos JPA", "Para que serve o mappedBy = \"cliente\" no @OneToMany?", ["Para criar uma tabela extra", "Para dizer que o outro lado é o dono da chave estrangeira e este só a espelha", "Para apagar o cliente", "Para trocar LAZY por EAGER"], 1, "Sem o mappedBy, o JPA trata como duas relações separadas e cria uma tabela extra.", "É a assinatura do contrato: quem manda é o campo cliente do endereço.", "Marca o lado inverso.", "jparel"),
+  Q("Relacionamentos JPA", "Com orphanRemoval = true, o que acontece ao remover um endereço da lista do cliente?", ["Nada", "A linha do endereço é apagada do banco ao fim da transação", "O cliente é apagado", "Dá erro de compilação"], 1, "O endereço 'órfão' (sem pai na lista) é removido do banco.", "É tirar o item da lista de compras e o mercado jogar o produto fora.", "Órfão = sem pai.", "jparel"),
+  Q("Relacionamentos JPA", "Qual é o fetch padrão de um @ManyToOne?", ["LAZY", "EAGER", "Nenhum", "Depende do banco"], 1, "@ManyToOne e @OneToOne são EAGER por padrão. Por isso se declara fetch = LAZY para evitar consultas escondidas.", "É um funcionário que já traz a pasta do cliente sem você pedir.", "Ao contrário do @OneToMany.", "jparel")
 );
 
 /* ---------- navegação ---------- */
@@ -1975,7 +2139,11 @@ function pintaHoje() {
   if (fr.length) [...$("fracos").children].forEach((li, k) => { li.querySelector("span").textContent = fr[k].tema; const b = li.querySelector("i"); b.style.width = fr[k].pct + "%"; b.style.background = "var(--hot)"; li.querySelector(".pct").textContent = fr[k].pct + "%"; });
   else $("fracos").firstChild.textContent = totais()[1] ? "Nenhum ponto fraco por enquanto. Continue assim!" : "Faça sua primeira rodada. Depois dela, mostro aqui o que você mais erra.";
   $("treinarFracos").hidden = !PR.pend.length;
+  const dv = revDevidas(), emRev = Object.keys(PR.rev || {}).length;
+  $("revTxt").textContent = dv.length ? `${dv.length} ${dv.length === 1 ? "pergunta pede" : "perguntas pedem"} revisão hoje.` : emRev ? `Nada para hoje. ${emRev} em revisão nos próximos dias.` : "Quando você errar uma pergunta, ela volta aqui depois de 1, 3, 7 e 14 dias.";
+  $("revIr").hidden = !dv.length;
 }
+$("revIr").onclick = () => comecar(revDevidas().sort(() => Math.random() - .5).slice(0, 10));
 function pintaEv() {
   const [ac, tot] = totais();
   $("sAcerto").textContent = tot ? Math.round(ac / tot * 100) + "%" : "–";

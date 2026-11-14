@@ -1,16 +1,35 @@
 # Apoio de Estudos
 
-App de estudos para quem está começando em programação e quer chegar ao **backend com Java e Spring**. Trilha de aulas em ordem, quiz com explicação, desafios de lógica, projetos, anotações com correção automática e revisão espaçada. Roda direto no navegador, sem servidor e sem cadastro.
+## O que é
 
-## O que tem
+Um app de estudos de programação que roda direto no navegador, sem cadastro e sem servidor. Ele organiza o conteúdo em uma **trilha de 48 aulas em ordem**, com explicações em linguagem simples, exemplos de código, animações passo a passo, **mais de 460 perguntas de quiz**, desafios de lógica, projetos e anotações.
 
-- **Trilha com 48 aulas**, do básico (variáveis, laços, classes) até Spring, JPA, SQL, segurança, desempenho e infraestrutura.
-- **Mais de 460 perguntas** de quiz, com ordem e alternativas sorteadas a cada rodada, dica, explicação e analogia.
-- **Revisão espaçada:** o que você erra volta depois de 1, 3, 7 e 14 dias.
-- **Fluxo por aula:** quiz, depois anotação, depois "finalizar", e o app volta à trilha na aula seguinte.
-- **Anotações com correção automática:** confere as palavras-chave do tema (aceita sinônimos e analogias) e libera o avanço com pelo menos metade coberta.
-- **Animações passo a passo**, desafios de lógica, projetos, glossário e guia de status HTTP.
-- **Instalável (PWA)** e funciona offline.
+## Para que serve
+
+Para quem está **começando em programação e quer chegar ao backend com Java e Spring**. A ideia é estudar um passo de cada vez e fixar o que aprendeu:
+
+- cada aula tem um quiz e uma anotação com suas próprias palavras, e só depois você a marca como estudada;
+- as perguntas que você erra voltam para revisão depois de 1, 3, 7 e 14 dias;
+- o app mostra onde você parou e leva você de volta à trilha, na aula seguinte.
+
+## Temas em destaque
+
+**Iniciante**
+- Java: variáveis e tipos de dados, tipos primitivos, estruturas de controle, laços, arrays, listas e Map, JVM e IntelliJ.
+- Programação orientada a objetos: classes e objetos, encapsulamento, herança, polimorfismo e abstração.
+
+**Intermediário**
+- Lógica e estruturas de dados: pilha, fila, busca binária e ordenação, em desafios práticos.
+- Projetos com objetos: conta bancária, pedido com itens e cadastro de clientes.
+- Ecossistema Java: exceções, APIs REST, JSON e DTO, banco de dados, Git e GitHub, arquitetura em camadas (MVC), Spring Boot e JPA, regras de pedidos e entregas, e testes.
+- Java moderno e SQL: streams, lambdas e Optional, JOINs, GROUP BY e relacionamentos no JPA.
+
+**Avançado**
+- Por baixo dos panos: o caminho da URL até a resposta, o que o Spring faz ao iniciar, memória, threads e conexões, e o banco por dentro (transações, índices e locks).
+- Nível profissional: SOLID e padrões de projeto, segurança, desempenho e como medi-lo, e infraestrutura (Docker e CI/CD).
+
+**Carreira**
+- Como se preparar para a primeira vaga de desenvolvedor e como usar a IA a seu favor.
 
 ## Tecnologias usadas
 
@@ -23,18 +42,4 @@ App de estudos para quem está começando em programação e quer chegar ao **ba
 | PWA (manifest + service worker) | Instalar como app e abrir sem internet |
 | Git e GitHub | Histórico das mudanças e publicação |
 
-Não há framework, build nem backend: o app é um único `index.html`, mais `sw.js`, `manifest.webmanifest` e `icon.svg`.
-
-## Como usar
-
-Abra o `index.html` no navegador. Para testar o modo instalável, sirva a pasta por HTTP, por exemplo:
-
-```
-python3 -m http.server 8000
-```
-
-e acesse `http://localhost:8000`.
-
-## Sobre o conteúdo
-
-O conteúdo de estudo (aulas, perguntas e glossário) foi escrito com apoio de IA e passou por revisão, mas pode conter imprecisões. Em caso de dúvida, confirme na documentação oficial.
+> O conteúdo de estudo foi escrito com apoio de IA e passou por revisão, mas pode conter imprecisões. Em caso de dúvida, confirme na documentação oficial.

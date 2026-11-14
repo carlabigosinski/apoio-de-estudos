@@ -340,6 +340,12 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
 .libera { padding: 8px 10px; border-radius: 8px; font-weight: 600; } .libera.sim { background: var(--ok-soft); color: var(--ok); } .libera.nao { background: var(--line); }
 .correcao ul { margin: 6px 0 0; padding-left: 18px; } .correcao li { margin: 3px 0; }
 .dica-passo { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
+.leit .lrow { display: grid; grid-template-columns: 26px 1fr; gap: 4px 8px; padding: 10px 0; border-top: 1px dashed var(--line); }
+.leit .lnum { grid-row: 1 / 3; align-self: start; width: 22px; height: 22px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.leit code { display: block; background: var(--code-bg); color: var(--code-fg); font-family: var(--font-mono); font-size: 13px; padding: 7px 10px; border-radius: 8px; overflow-x: auto; white-space: pre; }
+.leit code, .simb b { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+.leit .lfala { margin: 0; font-size: 15px; line-height: 1.5; }
+.simb { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; padding: 8px 4px; font-size: 14.5px; } .simb b { font-family: var(--font-mono); color: var(--primary); }
 </style>
 </head>
 <body>
@@ -435,6 +441,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     <p class="muted" id="aResumo" style="max-width:60ch"></p>
     <div id="aDesBox" class="card" hidden style="margin:16px 0"><h2 class="sec" style="margin-top:0">Seu desafio</h2><p id="aDesTxt" style="margin:0 0 10px"></p><div class="ide" style="margin:10px 0"><div class="ide-h">Exemplo</div><pre id="aDesEx"></pre></div><div id="aDesDicas"></div><p class="muted" style="font-size:14.5px;margin:10px 0">Tente primeiro no papel ou no IntelliJ. Depois veja como pensar e a solução.</p><button class="btn p" id="aDesVer">Ver como pensar e a solução</button></div>
     <div id="aTextoBox"><h2 class="sec">Entenda com calma</h2><div class="texto" id="aTexto"></div></div>
+    <div id="aLeitBox" hidden><h2 class="sec">Como ler este código, linha por linha</h2><p class="muted" style="margin:0 0 10px">Cada linha do código aparece com a leitura dela, como você falaria em voz alta, usando os nomes reais de cada coisa.</p><div id="aLeit"></div></div>
     <div id="aCodBox" hidden><h2 class="sec">Exemplos em código</h2><div id="aCodigos"></div></div>
     <div id="aAnimBox"><h2 class="sec">Veja acontecer</h2><div id="aTrace"></div><div id="aFlow"></div></div>
     <div id="aTermosBox" hidden><h2 class="sec">Palavras e siglas desta aula</h2><div class="termos" id="aTermos"></div></div>
@@ -2369,6 +2376,136 @@ function pintaGloss() {
   [...$("gLista").querySelectorAll(".termo")].forEach((d, i) => { const t = GLOSS.filter(t => !q || (t[0] + " " + t[1]).toLowerCase().includes(q))[i]; d.querySelector("b").textContent = t[0]; d.querySelector("p").textContent = t[1]; });
 }
 $("gBusca").oninput = pintaGloss; pintaGloss();
+/* Leitura linha por linha dos projetos: [trecho de código, explicação em palavras simples] */
+const LEITURA = {
+  projconta: {
+    simbolos: [["{ }", "Abrem e fecham um bloco. Tudo que está dentro pertence ao método, ao if ou ao laço."], [";", "Termina uma instrução."], ["=", "Atribuição: o valor da direita é guardado na variável da esquerda."], ["+=  e  -=", "Somam ou subtraem do valor atual. saldo += 50 é o mesmo que saldo = saldo + 50."], ["<=  >  ==", "Comparações: menor ou igual, maior, igual. O resultado é verdadeiro ou falso."], ["( )", "Depois do nome de um método, levam os parâmetros (os valores que ele recebe). Vazios, o método não recebe nada."], [".", "Acessa algo de um objeto: c.depositar(50) chama o método depositar do objeto c."], ["new", "Cria um objeto novo."], ["this", "O próprio objeto que está sendo usado."], ["public / private", "public: qualquer classe acessa. private: só a própria classe acessa."], ["void", "O método não retorna nenhum valor."], ["return", "Devolve um valor para quem chamou o método."], ["throw", "Lança uma exceção (um erro) e interrompe o método."], ["String / double / int", "Tipos: String é texto, double é número com vírgula, int é número inteiro."]],
+    blocos: [
+      { t: "Construtor", aberto: false, l: [
+        ["public Conta(String titular, double saldoInicial) {", "Crio o construtor da classe Conta. Ele é público e recebe 2 parâmetros: titular, do tipo String (texto), e saldoInicial, do tipo double (número com vírgula). Ele executa uma vez, a cada conta nova criada com new Conta(...)."],
+        ["this.titular = titular;", "O atributo titular da conta recebe o valor do parâmetro titular. O this.titular é o atributo; o titular sozinho é o parâmetro."],
+        ["this.saldo = saldoInicial;", "O atributo saldo da conta recebe o valor do parâmetro saldoInicial."],
+        ["extrato.add(\"Abertura: \" + saldoInicial);", "Adiciono à lista extrato o texto \"Abertura: \" seguido do valor de saldoInicial. O + junta o texto com o valor."],
+        ["}", "Fim do construtor."]],
+        fala: "O construtor Conta recebe o titular (texto) e o saldo inicial (número com vírgula), guarda os dois na conta e adiciona a linha de abertura na lista extrato." },
+      { t: "Método depositar", aberto: true, l: [
+        ["public void depositar(double valor) {", "Crio o método depositar. Ele é público, não retorna nada (void) e recebe 1 parâmetro: valor, do tipo double. A chave { abre o bloco do método."],
+        ["if (valor <= 0) {", "Condição: se valor for menor ou igual a 0, executa o bloco abaixo. Se não for, pula o bloco."],
+        ["throw new IllegalArgumentException(\"Valor inválido\");", "Lanço uma exceção IllegalArgumentException com a mensagem \"Valor inválido\". O método para aqui: o saldo não muda e o extrato não recebe nada. A mensagem só aparece na tela se alguém capturar a exceção e imprimir."],
+        ["}", "Fim do if."],
+        ["saldo += valor;", "Se não lançou exceção, soma valor ao saldo. Com saldo 100 e valor 50, o saldo passa a ser 150."],
+        ["extrato.add(\"Depósito: +\" + valor);", "Adiciono à lista extrato o texto \"Depósito: +\" seguido do valor. Só vai para a tela quando o extrato for impresso."],
+        ["}", "Fim do método depositar."]],
+        fala: "Crio o método público depositar, que recebe valor e não retorna nada. Se valor for menor ou igual a 0, lança a exceção \"Valor inválido\". Se não, soma valor ao saldo e adiciona \"Depósito: +valor\" na lista extrato." },
+      { t: "Método sacar", aberto: false, l: [
+        ["public void sacar(double valor) {", "Crio o método sacar. Ele é público, não retorna nada e recebe o parâmetro valor, do tipo double."],
+        ["if (valor <= 0) {", "Condição: se valor for menor ou igual a 0."],
+        ["throw new IllegalArgumentException(\"Valor inválido\");", "Lanço a exceção \"Valor inválido\" e o método para."],
+        ["}", "Fim do primeiro if."],
+        ["if (valor > saldo) {", "Segunda condição: se valor for maior que o saldo."],
+        ["throw new IllegalStateException(\"Saldo insuficiente\");", "Lanço a exceção IllegalStateException com a mensagem \"Saldo insuficiente\" e o método para. O saldo continua igual."],
+        ["}", "Fim do segundo if."],
+        ["saldo -= valor;", "Se passou pelas duas condições, subtrai valor do saldo."],
+        ["extrato.add(\"Saque: -\" + valor);", "Adiciono à lista extrato o texto \"Saque: -\" seguido do valor."],
+        ["}", "Fim do método sacar."]],
+        fala: "O método sacar verifica 2 condições: valor menor ou igual a 0 e valor maior que o saldo. Se nenhuma for verdadeira, subtrai valor do saldo e adiciona \"Saque: -valor\" na lista extrato." },
+      { t: "Método imprimirExtrato", aberto: false, l: [
+        ["public void imprimirExtrato() {", "Crio o método imprimirExtrato. Ele é público, não retorna nada e não recebe parâmetros (parênteses vazios)."],
+        ["System.out.println(\"Extrato de \" + titular);", "Imprime na tela \"Extrato de \" seguido do titular e pula uma linha. O println escreve e pula linha."],
+        ["for (String linha : extrato) {", "Laço for-each: para cada String da lista extrato, executa o bloco abaixo. Em cada volta, o elemento atual se chama linha. O : lê-se \"em\"."],
+        ["System.out.println(\" - \" + linha);", "Imprime \" - \" seguido da linha atual. Como está dentro do for, repete uma vez para cada elemento da lista."],
+        ["}", "Fim do for. Volta para o próximo elemento, até a lista acabar."],
+        ["System.out.println(\"Saldo: \" + saldo);", "Depois do for, imprime \"Saldo: \" seguido do saldo atual."],
+        ["}", "Fim do método."]],
+        fala: "Imprime o titular, depois percorre a lista extrato imprimindo cada elemento em uma linha e, no fim, imprime o saldo." },
+      { t: "Usando a classe (Main)", aberto: false, l: [
+        ["Conta c = new Conta(\"Ana\", 100);", "Declaro a variável c do tipo Conta e guardo nela um objeto novo, criado pelo construtor com titular \"Ana\" e saldoInicial 100."],
+        ["c.depositar(50);", "Chamo o método depositar do objeto c, passando 50 como valor."],
+        ["try {", "Bloco try: executa o código de dentro e, se uma exceção for lançada, desvia para o catch."],
+        ["c.sacar(500);", "Chamo o método sacar com 500. O saldo é 120, então o método lança a exceção \"Saldo insuficiente\"."],
+        ["} catch (IllegalStateException e) {", "Bloco catch: captura exceções do tipo IllegalStateException. A exceção fica guardada na variável e."],
+        ["System.out.println(\"Erro: \" + e.getMessage());", "Imprime \"Erro: \" seguido da mensagem da exceção, que é \"Saldo insuficiente\"."],
+        ["}", "Fim do catch."]],
+        fala: "Crio a conta com titular \"Ana\" e saldo 100, depósito 50 e tento sacar 500. Como o saldo não cobre, a exceção é capturada e a mensagem é impressa." }
+    ]
+  },
+  projpedido: {
+    blocos: [
+      { t: "Classe ItemPedido", aberto: true, l: [
+        ["public ItemPedido(Produto produto, int quantidade) {", "Crio o construtor de ItemPedido. Ele recebe 2 parâmetros: produto, do tipo Produto, e quantidade, do tipo int (número inteiro)."],
+        ["if (quantidade <= 0) {", "Condição: se quantidade for menor ou igual a 0."],
+        ["throw new IllegalArgumentException(\"Quantidade deve ser maior que zero\");", "Lanço a exceção com essa mensagem. O construtor para e o objeto não é criado."],
+        ["}", "Fim do if."],
+        ["this.produto = produto;", "O atributo produto recebe o valor do parâmetro produto."],
+        ["this.quantidade = quantidade;", "O atributo quantidade recebe o valor do parâmetro quantidade."],
+        ["public double subtotal() {", "Crio o método subtotal. Ele é público, não recebe parâmetros e retorna um double (número com vírgula)."],
+        ["return produto.getPreco() * quantidade;", "Chamo o método getPreco do produto, multiplico (*) pela quantidade e retorno o resultado para quem chamou subtotal."]],
+        fala: "O construtor só cria o item se a quantidade for maior que 0. O método subtotal retorna o preço do produto vezes a quantidade." },
+      { t: "Classe Pedido", aberto: false, l: [
+        ["private final List<ItemPedido> itens = new ArrayList<>();", "Atributo privado itens: uma lista de ItemPedido, criada vazia com new ArrayList<>(). O final indica que o atributo não pode receber outra lista, mas a lista aceita novos elementos."],
+        ["public void adicionarItem(Produto produto, int quantidade) {", "Crio o método adicionarItem. Ele não retorna nada e recebe 2 parâmetros: produto (Produto) e quantidade (int)."],
+        ["itens.add(new ItemPedido(produto, quantidade));", "Crio um ItemPedido com esses dois valores e adiciono à lista itens. Se a quantidade for inválida, o construtor do ItemPedido lança a exceção."],
+        ["public double total() {", "Crio o método total. Ele não recebe parâmetros e retorna um double."],
+        ["double soma = 0;", "Declaro a variável soma, do tipo double, com valor inicial 0."],
+        ["for (ItemPedido item : itens) {", "Laço for-each: para cada ItemPedido da lista itens, executa o bloco abaixo. O elemento atual se chama item."],
+        ["soma += item.subtotal();", "Chamo o método subtotal do item atual e somo o resultado em soma."],
+        ["}", "Fim do for."],
+        ["return soma;", "Retorna o valor de soma para quem chamou o método total."]],
+        fala: "O método total começa com soma em 0, percorre a lista itens somando o subtotal de cada item e retorna a soma." }
+    ]
+  },
+  projcrud: {
+    blocos: [
+      { t: "Método cadastrar (ClienteService)", aberto: true, l: [
+        ["public Cliente cadastrar(String nome, String email) {", "Crio o método cadastrar. Ele recebe 2 parâmetros do tipo String (nome e email) e retorna um Cliente."],
+        ["if (nome == null || nome.isBlank()) {", "Condição: se nome for null (sem valor) OU (||) se nome estiver vazio ou só com espaços (isBlank). Basta uma das duas ser verdadeira. O == compara se dois valores são iguais."],
+        ["throw new IllegalArgumentException(\"Nome é obrigatório\");", "Lanço a exceção com a mensagem \"Nome é obrigatório\" e o método para."],
+        ["}", "Fim do if."],
+        ["if (repositorio.existeEmail(email)) {", "Chamo o método existeEmail do repositorio passando email. Ele retorna verdadeiro se já existir cliente com esse e-mail. Se for verdadeiro, entra no bloco."],
+        ["throw new IllegalStateException(\"E-mail já cadastrado\");", "Lanço a exceção com a mensagem \"E-mail já cadastrado\" e o método para. Em uma API, isso viraria o status 409."],
+        ["}", "Fim do if."],
+        ["return repositorio.salvar(new Cliente(proximoId++, nome, email));", "Lido de dentro para fora: crio um Cliente com id proximoId, nome e email (o ++ usa o valor atual e depois soma 1 em proximoId). Passo esse cliente para o método salvar do repositorio e retorno o cliente que ele devolve."]],
+        fala: "O método cadastrar lança exceção se o nome estiver vazio ou se o e-mail já existir. Se estiver tudo certo, cria o Cliente com um novo id, salva no repositorio e retorna o cliente." },
+      { t: "Método buscar (ClienteService)", aberto: false, l: [
+        ["public Cliente buscar(Long id) {", "Crio o método buscar. Ele recebe o parâmetro id, do tipo Long (número inteiro grande), e retorna um Cliente."],
+        ["return repositorio.buscarPorId(id)", "Chamo o método buscarPorId do repositorio. Ele retorna um Optional<Cliente>: um valor que pode ter um Cliente ou estar vazio."],
+        [".orElseThrow(() -> new NoSuchElementException(\"Cliente \" + id + \" não existe\"));", "Se o Optional tiver um Cliente, retorna esse cliente. Se estiver vazio, lança a exceção NoSuchElementException com a mensagem \"Cliente \" + id + \" não existe\". O -> separa os parâmetros do que será executado. Em uma API, seria o status 404."]],
+        fala: "O método buscar pede o cliente ao repositorio: se existir, retorna o cliente; se não existir, lança a exceção." },
+      { t: "Classe RepositorioEmMemoria", aberto: false, l: [
+        ["private final Map<Long, Cliente> dados = new HashMap<>();", "Atributo privado dados: um Map, que guarda pares chave e valor. A chave é um Long (o id) e o valor é um Cliente. Começa vazio."],
+        ["public Cliente salvar(Cliente c) { dados.put(c.getId(), c); return c; }", "Método salvar: recebe um Cliente c, guarda em dados com put usando o id do cliente como chave e retorna o próprio cliente."],
+        ["public Optional<Cliente> buscarPorId(Long id) { return Optional.ofNullable(dados.get(id)); }", "Método buscarPorId: busca em dados o valor da chave id (get) e retorna dentro de um Optional. O ofNullable cria um Optional com o Cliente, ou vazio se get retornar null."],
+        ["public void remover(Long id) { dados.remove(id); }", "Método remover: não retorna nada e remove de dados o item da chave id."]],
+        fala: "O repositório guarda os clientes em um Map, usando o id como chave: salvar coloca, buscarPorId procura e remover tira." }
+    ]
+  }
+};
+function montaLeitura(k) {
+  const L = LEITURA[k]; if (!L) { $("aLeitBox").hidden = true; $("aLeit").innerHTML = ""; return; }
+  $("aLeitBox").hidden = false;
+  const el = $("aLeit"); el.innerHTML = "";
+  const mk = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  if (L.simbolos) {
+    const d = mk("details", "exp"); d.appendChild(mk("summary", "", "Primeiro: o que significam os símbolos"));
+    const g = mk("div", "simb");
+    L.simbolos.forEach(s => { g.appendChild(mk("b", "", s[0])); g.appendChild(mk("span", "", s[1])); });
+    d.appendChild(g); el.appendChild(d);
+  }
+  L.blocos.forEach(b => {
+    const d = mk("details", "exp leit"); if (b.aberto) d.open = true;
+    d.appendChild(mk("summary", "", b.t));
+    b.l.forEach((p, n) => {
+      const r = mk("div", "lrow");
+      r.appendChild(mk("span", "lnum", String(n + 1)));
+      const c = mk("code"); c.innerHTML = realca(p[0]); r.appendChild(c);
+      r.appendChild(mk("p", "lfala", p[1]));
+      d.appendChild(r);
+    });
+    const f = mk("div", "ana"); f.appendChild(mk("b", "", "Lendo de ponta a ponta: ")); f.appendChild(document.createTextNode(b.fala));
+    d.appendChild(f); el.appendChild(d);
+  });
+}
+
 function abreAula(i, paraFim = false) {
   aulaAtual = i; PR.ult = i; salvaPR(); const e = ETAPAS[i], a = AULAS[e[5]];
   $("aEtapa").textContent = `${e[6]} · etapa ${i + 1} de ${ETAPAS.length}`; $("aTitulo").textContent = e[0]; $("aResumo").textContent = a.resumo || "";
@@ -2380,6 +2517,7 @@ function abreAula(i, paraFim = false) {
   $("aCodigos").innerHTML = cods.map(c => `<div class="ide"><div class="ide-h"></div><pre></pre></div>`).join("");
   [...$("aCodigos").children].forEach((d, k) => { d.querySelector(".ide-h").textContent = cods[k][0]; d.querySelector("pre").innerHTML = realca(cods[k][1]); });
   $("aAnimBox").hidden = !(a.trace || a.flow);
+  montaLeitura(e[5]);
   $("aTermosBox").hidden = !a.termos; $("aTermos").innerHTML = (a.termos || []).map(() => `<div class="termo"><b></b><p></p></div>`).join("");
   [...$("aTermos").children].forEach((d, k) => { d.querySelector("b").textContent = a.termos[k][0]; d.querySelector("p").textContent = a.termos[k][1]; });
   $("aTrace").innerHTML = ""; $("aFlow").innerHTML = "";
@@ -2389,8 +2527,8 @@ function abreAula(i, paraFim = false) {
     $("aDesTxt").textContent = dz.enunciado; $("aDesEx").textContent = dz.exemplo;
     $("aDesDicas").innerHTML = (dz.dicas || []).map((d, k) => `<details class="exp"><summary>Dica ${k + 1}</summary><div class="ana"></div></details>`).join("");
     [...$("aDesDicas").children].forEach((d, k) => d.querySelector(".ana").textContent = dz.dicas[k]);
-    $("aTextoBox").hidden = true; $("aCodBox").hidden = true; $("aAnimBox").hidden = true; $("aDesVer").hidden = false;
-    $("aDesVer").onclick = () => { $("aTextoBox").hidden = !a.texto; $("aCodBox").hidden = !cods.length; $("aAnimBox").hidden = !(a.trace || a.flow); $("aDesVer").hidden = true; };
+    $("aTextoBox").hidden = true; $("aCodBox").hidden = true; $("aLeitBox").hidden = true; $("aAnimBox").hidden = true; $("aDesVer").hidden = false;
+    $("aDesVer").onclick = () => { $("aTextoBox").hidden = !a.texto; $("aCodBox").hidden = !cods.length; $("aLeitBox").hidden = !LEITURA[e[5]]; $("aAnimBox").hidden = !(a.trace || a.flow); $("aDesVer").hidden = true; };
   }
   go("aula");
   if (paraFim) $("aLida").scrollIntoView({ block: "center" });

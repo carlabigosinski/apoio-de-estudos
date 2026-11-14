@@ -19,7 +19,7 @@ Além de criar uma ferramenta para meus estudos, essa experiência me permitiu a
 No final, aprendi não só sobre programação, mas também sobre como transformar uma ideia em um projeto e conduzir um desenvolvimento com IA.
 
 
-## Recursos de estudo do app
+## No projeto/aplicativo, como serão os estudos?
 
 - Trilha de estudos: 48 aulas organizadas em uma sequência, do básico ao avançado.
 - Explicações e exemplos: conteúdos em linguagem simples, com exemplos de código para facilitar o entendimento.

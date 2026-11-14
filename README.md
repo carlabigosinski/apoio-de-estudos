@@ -19,10 +19,11 @@ Além de criar uma ferramenta para meus estudos, essa experiência me permitiu a
 No final, aprendi não só sobre programação, mas também sobre como transformar uma ideia em um projeto e conduzir um desenvolvimento com IA.
 
 
-## O que você vai encontrar para estudar?
+## Recursos de estudo do app
 
 - Trilha de estudos: 48 aulas organizadas em uma sequência, do básico ao avançado.
 - Explicações e exemplos: conteúdos em linguagem simples, com exemplos de código para facilitar o entendimento.
+- Leitura de código linha por linha: nos desafios e projetos, cada linha do código vem com uma explicação de como lê-la e interpretá-la em voz alta, usando os nomes reais de cada coisa (método, parâmetro, lista, `if`, `for`, `JOIN`...). Ajuda a entender o que o algoritmo faz passo a passo, sem decorar.
 - Quizzes: mais de 460 perguntas para testar o que você aprendeu.
 - Anotações: espaço para escrever o que entendeu com suas próprias palavras.
 - Desafios e projetos: exercícios para praticar lógica e desenvolver o raciocínio.

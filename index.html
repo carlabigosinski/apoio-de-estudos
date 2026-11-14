@@ -328,6 +328,18 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
   #v-quiz, #v-res { max-width: 900px; }
   .texto p { max-width: 78ch; }
 }
+.retomar { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 1px solid var(--primary); background: var(--primary-soft); border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; font-size: 14.5px; }
+.retomar span { flex: 1; } .retomar em { font-style: normal; font-weight: 800; color: var(--primary); white-space: nowrap; }
+.etapa.proxima { background: var(--primary-soft); border-radius: 12px; box-shadow: 0 0 0 3px var(--primary-soft); }
+.passos { display: grid; gap: 8px; margin-top: 20px; } .passos .btn { text-align: left; } .passos .btn[disabled] { opacity: .5; }
+.correcao { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 14.5px; background: var(--surface); }
+.correcao h3 { font-size: 15px; margin: 0 0 6px; } .correcao p { margin: 6px 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.chips span { border-radius: 999px; padding: 3px 10px; font-size: 13px; font-weight: 700; }
+.chips .sim { background: var(--ok-soft); color: var(--ok); } .chips .nao { background: var(--line); color: var(--muted); }
+.libera { padding: 8px 10px; border-radius: 8px; font-weight: 600; } .libera.sim { background: var(--ok-soft); color: var(--ok); } .libera.nao { background: var(--line); }
+.correcao ul { margin: 6px 0 0; padding-left: 18px; } .correcao li { margin: 3px 0; }
+.dica-passo { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -337,6 +349,8 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     <div class="marca"><i>&lt;/&gt;</i> Apoio de Estudos</div>
     <div class="status"><span class="pill" id="pNivel">Nível <b>1</b> · 0 XP</span><span class="pill" id="pSeq">Sequência <b>0 dias</b></span></div>
   </div>
+
+  <button class="retomar" id="retomar" hidden><span></span><em>Continuar →</em></button>
 
   <!-- HOJE -->
   <main class="view" id="v-hoje">
@@ -426,7 +440,8 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     <div id="aTermosBox" hidden><h2 class="sec">Palavras e siglas desta aula</h2><div class="termos" id="aTermos"></div></div>
     <h2 class="sec">O que guardar</h2>
     <ul class="pontos" id="aPontos"></ul>
-    <div class="acoes" style="margin-top:20px"><button class="btn" id="aLida">Marcar como estudada</button><button class="btn" id="aNota">Anotar com minhas palavras</button><button class="btn p" id="aQuiz">Fazer o quiz desta aula</button></div>
+    <div class="passos"><button class="btn p" id="aQuiz">1. Fazer o quiz desta aula</button><button class="btn" id="aNota">2. Anotar com minhas palavras</button><button class="btn p" id="aLida">3. Finalizar e marcar como estudada</button></div>
+    <p class="dica-passo" id="aDicaPasso"></p>
   </main>
 
   <!-- QUIZ -->
@@ -455,7 +470,7 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     </div>
     <div class="card"><h2 style="font-size:20px;margin-bottom:6px">Acertos por tema</h2><ul class="limpa" id="rTemas"></ul></div>
     <div class="card" id="rRevBox" style="margin-top:14px"><h2 style="font-size:20px;margin-bottom:10px">O que você errou, em resumo</h2><div class="rev" id="rRev"></div></div>
-    <div class="acoes" style="margin-top:14px"><button class="btn" id="rInicio">Voltar ao início</button><button class="btn p" id="rTreinar">Treinar o que errei</button></div>
+    <div class="acoes" style="margin-top:14px"><button class="btn p" id="rAula" hidden>Voltar à aula e anotar →</button><button class="btn" id="rInicio">Voltar ao início</button><button class="btn p" id="rTreinar">Treinar o que errei</button></div>
   </main>
 
   <!-- COM A IA -->
@@ -530,12 +545,13 @@ details.http summary small { color: var(--muted); display: block; font-size: 14p
     <h1 style="font-size:32px">Anotações e foco</h1>
     <div class="grid2" style="margin-top:14px">
       <div class="card">
-        <h2 style="font-size:20px;margin-bottom:10px">Nova anotação</h2>
+        <h2 style="font-size:20px;margin-bottom:10px" id="nH">Nova anotação</h2>
         <form id="formNota" style="display:grid;gap:10px">
           <label class="campo">Título<input id="nTitulo" type="text" required placeholder="Ex.: Diferença entre LAZY e EAGER"></label>
           <label class="campo">Com suas palavras<textarea id="nTexto" placeholder="Explique como se contasse para um amigo"></textarea></label>
           <label class="campo">Etapa<select id="nTag"></select></label>
-          <button class="btn p" type="submit">Salvar anotação</button>
+          <div class="correcao" id="nCorrecao" aria-live="polite"></div>
+          <button class="btn p" type="submit" id="nSalva">Salvar anotação</button><button class="btn" type="button" id="nCancela" hidden>Cancelar edição</button>
         </form>
       </div>
       <div style="display:grid;gap:14px;align-content:start">
@@ -641,7 +657,7 @@ const VER = 4;
 const fmtData = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 const hojeStr = () => fmtData(new Date());
 const diasEntre = (a, b) => Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000);
-let PR = Object.assign({ resp: {}, rod: [], lidas: {}, dias: [], min: {}, pend: [], rev: {} }, le("prog", {}));
+let PR = Object.assign({ resp: {}, rod: [], lidas: {}, dias: [], min: {}, pend: [], rev: {}, ult: -1, tar: {} }, le("prog", {}));
 const salvaPR = () => guarda("prog", PR);
 const INT_REV = [1, 3, 7, 14];   // dias entre as revisões
 const somaDias = (str, n) => { const d = new Date(str + "T12:00:00"); d.setDate(d.getDate() + n); return fmtData(d); };
@@ -744,6 +760,9 @@ const MODULOS = [
     ["Streams, lambdas e Optional", "filtrar, transformar e somar listas sem laço; lidar com valores que podem não existir", "", 0, "streams"],
     ["SQL avançado", "INNER x LEFT JOIN, GROUP BY, HAVING, NULL e relação N:N", "", 0, "sqlavanc"],
     ["Relacionamentos no JPA", "@ManyToOne, @OneToMany, mappedBy, cascade e orphanRemoval", "", 0, "jparel"] ] },
+  { n: "Extra: como este app foi feito", nv: "n1", niv: "Extra", it: [
+    ["Tecnologias usadas neste app", "HTML, CSS, JavaScript, PWA, localStorage, Git e GitHub, explicados com exemplos do próprio app", "", 0, "techapp"],
+    ["Tecnologias do backend (API de clientes)", "Java, Spring Boot, JPA, Flyway, H2, testes e o que ainda falta aprender", "", 0, "techback"] ] },
   { n: "Por baixo dos panos", nv: "n3", niv: "Avançado", it: [
     ["Da URL à resposta", "O que acontece quando você abre um site: DNS, TCP, HTTPS, servidor e banco", "", 0, "url"],
     ["O que o Spring faz ao iniciar", "Do main() até a API pronta: beans, Tomcat, Flyway", "", 0, "boot"],
@@ -1581,6 +1600,76 @@ private List<Produto> produtos;`]],
     termos: [["@ManyToOne", "Muitos para um: o lado que tem a chave estrangeira."], ["@OneToMany", "Um para muitos: o lado que tem a lista."], ["@JoinColumn", "Diz o nome da coluna da chave estrangeira."], ["mappedBy", "Marca o lado inverso: quem manda na chave estrangeira é o outro lado."], ["Bidirectional", "Bidirecional: os dois lados se enxergam (cliente tem endereços, endereço tem cliente)."], ["cascade", "Propaga a operação (salvar, apagar) do pai para os filhos."], ["orphanRemoval", "Apaga do banco o filho removido da lista do pai."], ["@ManyToMany", "Muitos para muitos, com tabela de junção."], ["Owner side", "Lado dono: o que controla a chave estrangeira."], ["Infinite recursion", "Laço infinito ao converter para JSON uma relação bidirecional. Use DTO."]],
     pontos: ["@ManyToOne fica no lado da chave estrangeira; @OneToMany é o lado da lista.", "mappedBy marca o lado inverso e evita uma tabela extra.", "cascade propaga salvar/apagar; orphanRemoval apaga quem saiu da lista.", "@ManyToOne é EAGER por padrão: declare LAZY. Devolva DTO, não a entidade."] }
 });
+Object.assign(MAIS, {
+  techapp: { resumo: "Este app de estudos é feito com tecnologias simples de front-end. Conhecê-las ajuda a entender como uma página web funciona por dentro, e você pode mexer nele para praticar.", texto: [
+    `O app inteiro é um único arquivo, o index.html. Ele usa as três tecnologias base da web: HTML (a estrutura: títulos, botões, listas), CSS (a aparência: cores, espaçamento, modo claro e escuro) e JavaScript (o comportamento: o que acontece quando você clica numa resposta). Não há servidor nem banco de dados: tudo roda no seu navegador.`,
+    `O conteúdo das aulas fica em estruturas de dados do JavaScript: objetos e listas, como MODULOS (a trilha), AULAS (os textos), PERGUNTAS (o quiz) e FLOWS (as animações passo a passo). Para criar uma aula nova você só adiciona um objeto, sem mexer em HTML. Isso é o mesmo raciocínio de um backend: separar os dados da lógica que os exibe.`,
+    `Seu progresso (respostas, dias estudados, revisões) é guardado no localStorage, um pequeno armazenamento do próprio navegador. Por isso ele fica só no seu aparelho e some se você limpar os dados do site. A revisão espaçada usa essas datas: errou hoje, a pergunta volta em 1, 3, 7 e 14 dias.`,
+    `O app é um PWA (Progressive Web App): o manifest.webmanifest diz nome e ícone, permitindo instalar como app, e o sw.js é um service worker, um script que guarda cópias dos arquivos para abrir mesmo sem internet. A estratégia é network-first: tenta a internet primeiro, e só usa a cópia se estiver offline.`,
+    `O código é versionado com Git (histórico de mudanças, em commits) e publicado no GitHub, que guarda o repositório online. O fluxo é: editar, testar, commit e push. Para validar sem abrir o navegador, usamos o Node.js para checar a sintaxe do JavaScript e o Chrome em modo headless (sem janela) para tirar capturas de tela.`
+  ],
+    codigos: [["Dados.js", `// Uma pergunta do quiz é só um objeto
+const p = {
+  tema: "Java",
+  q: "== compara o quê?",
+  op: ["Conteúdo", "Referências"],
+  c: 1            // índice da resposta certa
+};`],
+      ["Progresso.js", `// Salvar e ler no navegador
+localStorage.setItem("prog", JSON.stringify({ dias: 3 }));
+const prog = JSON.parse(localStorage.getItem("prog"));`],
+      ["sw.js", `// Service worker: tenta a rede, senão usa a cópia
+self.addEventListener("fetch", e => {
+  e.respondWith(fetch(e.request)
+    .catch(() => caches.match(e.request)));
+});`],
+      ["Git.sh", `git add index.html
+git commit -m "Adiciona aula de streams"
+git push origin main`]],
+    termos: [["HTML", "Linguagem que define a estrutura da página."], ["CSS", "Linguagem que define a aparência."], ["JavaScript", "Linguagem que dá comportamento à página, rodando no navegador."], ["localStorage", "Armazenamento do navegador, em pares chave/valor de texto."], ["JSON", "Formato de texto para representar dados; é o mesmo usado em APIs REST."], ["PWA", "Site que pode ser instalado e funcionar offline."], ["Service worker", "Script em segundo plano que intercepta requisições e guarda cópias."], ["Git", "Sistema que registra o histórico de mudanças do código."], ["GitHub", "Serviço que hospeda repositórios Git online."], ["Node.js", "JavaScript fora do navegador; aqui só valida o código."], ["Headless", "Navegador rodando sem janela, para testes automáticos."]],
+    pontos: ["O app é HTML + CSS + JavaScript puro, em um arquivo, sem servidor.", "Progresso mora no localStorage: só no seu navegador.", "Service worker + manifest transformam o site em PWA.", "O JSON do localStorage é o mesmo formato que sua API Spring vai devolver."] }
+});
+
+Object.assign(MAIS, {
+  techback: { resumo: "O app de estudos não tem backend, mas a sua API de clientes (a que você está construindo) tem. Aqui estão as tecnologias dela, o papel de cada uma e o que costuma vir depois.", texto: [
+    `A API é escrita em Java 21 com Spring Boot 4.1. O Spring Boot monta o servidor web (Tomcat embutido) e liga as peças sozinho, por isso um simples ./mvnw spring-boot:run já sobe tudo. O Maven (o mvnw é a versão que vem junto do projeto) baixa as bibliotecas listadas no pom.xml e compila o código.`,
+    `O código segue camadas, todas no pacote com.exemplo.clientes: o controller recebe a requisição HTTP, o service guarda as regras de negócio e o repository (Spring Data JPA) conversa com o banco. Os dados que entram e saem da API ficam em Dtos (records), separados das entidades do banco, e as exceções do domínio ficam em Erros.`,
+    `O banco é o H2 em memória: ótimo para estudar e testar, mas os dados somem a cada reinício. O JPA/Hibernate mapeia classes Java para tabelas. Quem cria e altera as tabelas é o Flyway, com arquivos de migração versionados (V1__..., V2__...). Com ddl-auto=validate, o Hibernate só confere se as entidades batem com o banco, e não altera nada. Mudou uma entidade? Crie uma nova migração.`,
+    `Os erros viram respostas padronizadas: o service lança uma exceção (NaoEncontrado vira 404, Conflito vira 409, ServicoIndisponivel vira 503) e o TratadorDeErros (@RestControllerAdvice) converte em ProblemDetail, o formato padrão RFC 7807. Falhas de validação (Bean Validation) devolvem 400 com a lista de erros.`,
+    `Para falar com serviços externos, a API usa o RestClient com limites de tempo (2s para conectar, 3s para ler) ao consultar o ViaCEP. Sem timeout, um serviço lento travaria a sua API. Se a rede falha, vira 503. A documentação interativa sai sozinha pelo springdoc (Swagger UI), e os testes usam @SpringBootTest, MockMvc e Mockito, com rollback a cada teste e o ViaCEP substituído por um falso, para nunca depender da internet.`,
+    `O que ainda vale aprender, nesta ordem: (1) trocar o H2 por PostgreSQL de verdade; (2) Docker, para rodar app e banco em qualquer máquina; (3) Spring Security com JWT, para login e permissões; (4) paginação e filtros nas listas; (5) logs e variáveis de ambiente (nunca coloque senha no código); (6) CI com GitHub Actions rodando os testes a cada push; (7) cache e mensageria, mais para a frente.`
+  ],
+    codigos: [["Camadas.java", `@RestController
+class ClienteController {
+  private final ClienteService service;   // controller só delega
+  @GetMapping("/clientes/{id}")
+  ClienteResponse detalhe(@PathVariable Long id) {
+    return service.buscar(id);            // regra fica no service
+  }
+}`],
+      ["V2__telefone.sql", `-- Flyway: mudou a entidade, cria nova migração
+ALTER TABLE clientes ADD COLUMN telefone VARCHAR(20);`],
+      ["Erros.java", `// service lança, o TratadorDeErros vira 404
+throw new Erros.NaoEncontrado("Cliente não existe");`],
+      ["application.properties", `spring.jpa.hibernate.ddl-auto=validate   # Flyway manda no schema
+viacep.url=https://viacep.com.br/ws`]],
+    termos: [["Spring Boot", "Framework Java que monta e configura a aplicação web quase sozinho."], ["Maven", "Ferramenta que baixa dependências e compila o projeto (pom.xml)."], ["JPA / Hibernate", "Mapeia classes Java para tabelas do banco."], ["Spring Data", "Gera os repositórios de acesso ao banco a partir de interfaces."], ["Flyway", "Controla as mudanças do banco com migrações versionadas."], ["H2", "Banco leve em memória, bom para estudo e testes."], ["DTO", "Objeto só para entrada e saída de dados da API, separado da entidade."], ["Bean Validation", "Anotações como @NotBlank que validam os dados recebidos."], ["ProblemDetail", "Formato padrão (RFC 7807) de resposta de erro em APIs."], ["RestClient", "Cliente HTTP do Spring para chamar outras APIs."], ["Timeout", "Tempo máximo de espera antes de desistir de uma chamada."], ["MockMvc", "Simula requisições HTTP nos testes, sem subir servidor."], ["Mockito", "Cria objetos falsos (mocks) para isolar o que se testa."], ["Swagger / springdoc", "Documentação interativa gerada a partir dos endpoints."]],
+    pontos: ["Camadas: controller recebe, service decide, repository guarda.", "Flyway é dono do schema; Hibernate só valida.", "Todo erro vira uma resposta HTTP padronizada.", "Chamada externa sempre com timeout.", "Próximos passos: PostgreSQL, Docker, Spring Security/JWT, CI."] }
+});
+
+Object.assign(MAIS, {
+  var: { texto: [
+    `Uma variável é uma caixinha com nome e tipo, guardada na memória. O tipo diz o que cabe nela: int guarda número inteiro, double guarda número com vírgula, boolean guarda verdadeiro ou falso e String guarda texto. O nome é como você chama essa caixinha no código. Criar a variável se chama declarar, e colocar o primeiro valor se chama inicializar (int idade = 25;).`,
+    `O Java é fortemente tipado: o tipo é decidido na declaração e não muda. Por isso int n = "10"; dá erro de compilação, pois texto não cabe em int. Para trocar o valor use a atribuição (idade = 26;). Para impedir que o valor mude, use final, que cria uma constante. Desde o Java 10 dá para escrever var idade = 25; e o compilador deduz o tipo, que continua fixo.`,
+    `Os nomes seguem regras e uma convenção. Não podem começar com número, ter espaço ou hífen, nem ser palavra reservada (como class). O padrão é o camelCase: nomeCompleto, saldoDaConta. Escolha nomes que expliquem o que a variável guarda: preco é melhor que p. Uma variável só existe dentro das chaves onde foi criada, o que se chama escopo.`,
+    `Cuidado com a divisão de inteiros: 7 / 2 dá 3, pois dois int resultam em int e a parte decimal é descartada. Para obter 3,5, use pelo menos um número decimal (7 / 2.0). O operador % devolve o resto da divisão (10 % 3 é 1). Com String, o + junta textos: "5" + "3" dá "53", sem fazer conta. Para converter com perda de decimais, use o cast: (int) 7.9 vale 7.`
+  ],
+    codigos: [["Declarar.java", `int idade = 25;            // declarar e inicializar\nidade = 26;                // atribuir outro valor\nfinal double TAXA = 0.18;  // constante: não muda mais\nvar nome = "Ana";          // Java deduz String`],
+      ["Divisao.java", `int a = 7 / 2;        // 3 (descarta o decimal)\ndouble b = 7 / 2.0;   // 3.5\nint resto = 10 % 3;   // 1\nint c = (int) 7.9;    // 7 (cast corta o decimal)`],
+      ["Concatenar.java", `String x = "5" + "3";   // "53" (junta textos)\nint y = 5 + 3;          // 8 (soma)\nString z = "Idade: " + 25;   // "Idade: 25"`]],
+    termos: [["Variável", "Caixinha com nome e tipo que guarda um valor na memória."], ["Tipo", "Define o que a variável guarda: int, double, boolean, String."], ["Declarar", "Criar a variável, dizendo tipo e nome."], ["Inicializar", "Dar o primeiro valor à variável."], ["Atribuição", "Guardar um valor na variável com o sinal =."], ["Constante", "Variável final: depois de receber valor, não muda mais."], ["camelCase", "Padrão de nomes: nomeCompleto, com a primeira letra minúscula."], ["Escopo", "Região (as chaves) onde a variável existe."], ["Cast", "Conversão explícita de tipo, como (int) 7.9."], ["Concatenar", "Juntar textos com o +."], ["Resto (%)", "Operador que devolve o resto da divisão."]] }
+});
+
 Object.entries(MAIS).forEach(([k, v]) => { AULAS[k] = Object.assign(AULAS[k] || {}, v); });
 
 const Q = (tema, q, op, c, por, ana, dica, aula, code) => ({ tema, q, op, c, por, ana, dica, aula, code });
@@ -1808,9 +1897,392 @@ PERGUNTAS.push(
   Q("Relacionamentos JPA", "Qual é o fetch padrão de um @ManyToOne?", ["LAZY", "EAGER", "Nenhum", "Depende do banco"], 1, "@ManyToOne e @OneToOne são EAGER por padrão. Por isso se declara fetch = LAZY para evitar consultas escondidas.", "É um funcionário que já traz a pasta do cliente sem você pedir.", "Ao contrário do @OneToMany.", "jparel")
 );
 
+/* ---------- mais perguntas dos temas iniciais (mock) ---------- */
+const N = (tema, aula, q, op, c, por, ana, dica, code) => Q(tema, q, op, c, por, ana, dica, aula, code);
+PERGUNTAS.push(
+  /* Variáveis e tipos de dados */
+  N("Variáveis e tipos", "var", "Qual é a forma correta de declarar uma variável inteira chamada idade com o valor 25?", ["int idade = 25;", "idade int = 25;", "integer idade := 25;", "int = idade 25;"], 0, "Em Java a ordem é tipo, nome, sinal de = e valor, terminando com ponto e vírgula.", "Primeiro o tipo.", "Tipo vem antes do nome."),
+  N("Variáveis e tipos", "var", "O que acontece neste código?", ["Guarda o número 10", "Erro de compilação: um texto não cabe em int", "Guarda 0", "O Java converte para double"], 1, "Java é fortemente tipado: uma variável int só aceita número inteiro. Texto entre aspas é String, e o compilador recusa.", "É tentar guardar água numa caixa de sapatos: o tipo da caixa não combina.", "Aspas duplas criam um String.", `int n = "10";`),
+  N("Variáveis e tipos", "var", "O que este código imprime?", ["8", "53", "Erro de compilação", "5 3"], 1, "Com String, o + concatena (junta) os textos. '5' e '3' viram '53', sem fazer conta.", "", "Os dois valores são texto.", `String a = "5";\nString b = "3";\nSystem.out.println(a + b);`),
+  N("Variáveis e tipos", "var", "Qual é o valor de d neste código?", ["2.5", "2.0", "2", "Erro de compilação"], 1, "10 / 4 são dois int, então a divisão dá 2 (descarta o decimal). Só depois o 2 é convertido para double, virando 2.0.", "", "A divisão acontece antes da atribuição.", `double d = 10 / 4;`),
+  N("Variáveis e tipos", "var", "Como obter 2,5 ao dividir 10 por 4?", ["10 / 4", "10 / 4.0", "10 % 4", "(int) 10 / 4"], 1, "Se pelo menos um dos lados for decimal (4.0), a divisão é decimal e dá 2.5.", "", "Basta um dos números ser decimal."),
+  N("Variáveis e tipos", "var", "Qual é o resultado de 10 % 3?", ["3", "1", "0", "3,33"], 1, "O % é o resto da divisão. 10 dividido por 3 dá 3 e sobra 1.", "É a sobra: 10 balas para 3 crianças, 3 para cada e sobra 1.", "Pense no que sobra da divisão."),
+  N("Variáveis e tipos", "var", "Qual destes nomes de variável é válido em Java?", ["2idade", "nome-completo", "nomeCompleto", "class"], 2, "Nome não pode começar com número, ter hífen ou ser palavra reservada (como class). nomeCompleto usa o padrão camelCase.", "", "Sem hífen, sem começar por número."),
+  N("Variáveis e tipos", "var", "Qual é a convenção para nomes de variáveis em Java?", ["camelCase: nomeCompleto", "PascalCase: NomeCompleto", "snake_case: nome_completo", "TUDO MAIÚSCULO"], 0, "Variáveis e métodos usam camelCase (primeira letra minúscula). PascalCase é para classes, e MAIÚSCULAS com _ para constantes.", "", "Começa minúscula e as palavras seguintes têm inicial maiúscula."),
+  N("Variáveis e tipos", "var", "Para que serve a palavra final em uma variável?", ["Encerra o programa", "Impede que ela receba outro valor depois de atribuída", "Faz o valor virar decimal", "Apaga a variável no fim do método"], 1, "final cria uma constante: depois do primeiro valor, não dá mais para trocar.", "É escrever a lápis ou a caneta: com final, ficou a caneta.", "Final como 'definitivo'.", `final double TAXA = 0.18;`),
+  N("Variáveis e tipos", "var", "Qual é o valor de x no final?", ["7", "8", "9", "6"], 1, "x começa em 5, vira 7 com x = x + 2 e vira 8 com x++ (que soma 1).", "", "Acompanhe linha por linha.", `int x = 5;\nx = x + 2;\nx++;`),
+  N("Variáveis e tipos", "var", "O que acontece neste código?", ["Imprime 1", "Erro de compilação: y não existe fora do bloco", "Imprime 0", "Imprime null"], 1, "Uma variável só existe dentro das chaves onde foi criada (escopo). Fora do if, o y deixou de existir.", "É um bilhete dentro de uma gaveta: fechou a gaveta, não dá mais para ler.", "Veja onde o y foi declarado.", `if (true) {\n    int y = 1;\n}\nSystem.out.println(y);`),
+  N("Variáveis e tipos", "var", "O que faz var idade = 25; (Java 10 ou mais novo)?", ["Cria uma variável sem tipo, que aceita qualquer coisa", "O compilador deduz o tipo (int) e ele fica fixo", "Cria uma constante", "Dá erro, o Java exige o tipo escrito"], 1, "Com var o compilador descobre o tipo pelo valor. A variável continua com tipo fixo; só não precisa escrevê-lo.", "", "Java continua tipado."),
+
+  /* Tipos primitivos */
+  N("Tipos primitivos", "prim", "Quantos tipos primitivos o Java tem?", ["4", "6", "8", "10"], 2, "São 8: byte, short, int, long, float, double, char e boolean.", "", "Quatro inteiros, dois decimais, um caractere e um lógico."),
+  N("Tipos primitivos", "prim", "Qual tipo primitivo guarda um único caractere?", ["String", "char", "byte", "text"], 1, "char guarda um caractere, escrito entre aspas simples, como 'A'. String é um texto e é um objeto.", "", "Aspas simples."),
+  N("Tipos primitivos", "prim", "O que este código imprime?", ["2147483648", "Erro em tempo de execução", "-2147483648", "0"], 2, "Passar do limite do int causa overflow: o valor dá a volta e vira o menor número, sem nenhum erro.", "É o hodômetro do carro: passou do máximo, voltou ao começo.", "O limite do int é 2147483647.", `System.out.println(Integer.MAX_VALUE + 1);`),
+  N("Tipos primitivos", "prim", "Por que 12345678901L precisa do L no final?", ["Porque o Java assume int, e esse número não cabe em int", "Porque L significa Large e é obrigatório em todo número", "Para o número virar decimal", "Para o número ficar positivo"], 0, "Sem o L, o Java trata o número como int e recusa, pois passa de 2,1 bilhões. O L avisa que é long.", "", "O tipo padrão de número inteiro é int."),
+  N("Tipos primitivos", "prim", "Qual é o valor inicial de um atributo int de uma classe, se você não atribuir nada?", ["null", "0", "-1", "Não tem valor: dá erro"], 1, "Atributos primitivos começam com 0, 0.0 ou false. Só os de objeto começam em null.", "", "Primitivos nunca são null."),
+  N("Tipos primitivos", "prim", "Qual destes pode guardar null?", ["int", "double", "Integer", "boolean"], 2, "Integer é a classe wrapper (objeto), e objeto pode ser null. Os primitivos sempre têm valor.", "", "Procure a inicial maiúscula."),
+  N("Tipos primitivos", "prim", "Qual é a classe wrapper do tipo int?", ["Int", "Integer", "Number", "Integral"], 1, "O wrapper de int é Integer. O de char é Character, e os outros têm o nome por extenso, como Double e Boolean.", "", "É o nome 'por extenso'."),
+  N("Tipos primitivos", "prim", "O que este código imprime?", ["true", "false", "0.3", "Erro de compilação"], 1, "0.1 + 0.2 em double dá 0.30000000000000004, então a comparação com 0.3 é falsa. Por isso dinheiro usa BigDecimal.", "", "Decimais binários não são exatos.", `System.out.println(0.1 + 0.2 == 0.3);`),
+  N("Tipos primitivos", "prim", "Qual é o tipo padrão de um número com vírgula, como 19.90?", ["float", "double", "decimal", "long"], 1, "Em Java, um decimal sem sufixo é double. Para float, é preciso escrever 19.90f.", "", "O float pede f no final."),
+  N("Tipos primitivos", "prim", "O que este código imprime?", ["B", "66", "A1", "Erro de compilação"], 1, "Em c + 1 o char vira número (código 65) e a soma dá 66. Para obter 'B' seria preciso (char)(c + 1).", "", "Conta com char vira número.", `char c = 'A';\nSystem.out.println(c + 1);`),
+
+  /* Estruturas de controle */
+  N("Estruturas de controle", "ctrl", "O que acontece neste código?", ["Executa o bloco do if", "Erro de compilação: atribuição não é condição", "Pula o bloco", "Imprime 0"], 1, "Com um só =, você atribui em vez de comparar, e o resultado (int) não é um boolean. O Java recusa. A comparação é ==.", "", "Um = guarda, dois == comparam.", `int x = 5;\nif (x = 5) {\n    System.out.println("cinco");\n}`),
+  N("Estruturas de controle", "ctrl", "Em a && b, quando o resultado é verdadeiro?", ["Quando pelo menos um é verdadeiro", "Quando os dois são verdadeiros", "Quando os dois são falsos", "Sempre"], 1, "&& significa 'e': só dá true se as duas condições forem verdadeiras.", "É exigir passaporte E visto: faltou um, não entra.", "&& é 'e'."),
+  N("Estruturas de controle", "ctrl", "Qual é o valor de r?", ["true", "false", "Erro de compilação", "null"], 0, "|| significa 'ou': basta uma condição ser verdadeira. 2 < 4 é verdadeira, então r é true.", "É aceitar dinheiro OU cartão: um dos dois basta.", "|| é 'ou'.", `boolean r = (3 > 5) || (2 < 4);`),
+  N("Estruturas de controle", "ctrl", "O que o operador ! faz?", ["Soma 1", "Inverte o valor lógico (nega)", "Compara dois valores", "Encerra o programa"], 1, "! significa 'não': !true é false e !false é true.", "", "Pense em 'não'."),
+  N("Estruturas de controle", "ctrl", "Qual é a saída quando dia vale 1?", ["A", "B", "AB", "Nada"], 2, "Sem break, o switch continua executando os cases seguintes (fall-through). Entra no case 1, imprime A, cai no case 2 e imprime B, onde o break para.", "", "Procure os break.", `switch (dia) {\n    case 1: System.out.print("A");\n    case 2: System.out.print("B"); break;\n    default: System.out.print("C");\n}`),
+  N("Estruturas de controle", "ctrl", "Para que serve o default em um switch?", ["Roda quando nenhum case combina", "É o primeiro case, sempre executado", "Encerra o switch", "Declara uma variável"], 0, "O default é o 'qualquer outro caso', como o else de um if.", "", "É o plano B."),
+  N("Estruturas de controle", "ctrl", "Qual é a diferença entre = e ==?", ["= compara e == atribui", "= atribui e == compara", "São a mesma coisa", "= é para texto e == é para número"], 1, "Um = guarda um valor na variável. Dois == comparam dois valores.", "", "Atribuir x comparar."),
+  N("Estruturas de controle", "ctrl", "O que este código imprime quando n vale 15?", ["A", "B", "AB", "C"], 0, "Em um if/else if, só o primeiro bloco com condição verdadeira roda. 15 > 10 já é verdadeiro, e os outros são ignorados.", "", "Só um bloco roda.", `if (n > 10) System.out.print("A");\nelse if (n > 5) System.out.print("B");\nelse System.out.print("C");`),
+  N("Estruturas de controle", "ctrl", "O que o operador ternário faz neste código?", ["Guarda adulto ou menor, conforme a condição", "Sempre guarda adulto", "Dá erro de compilação", "Guarda true ou false"], 0, "condição ? valorSeVerdadeiro : valorSeFalso é um if/else em uma linha. Com idade 20, a condição é verdadeira e o resultado é 'adulto'.", "", "É um if/else compacto.", `int idade = 20;\nString faixa = idade >= 18 ? "adulto" : "menor";`),
+
+  /* Laços de repetição */
+  N("Laços de repetição", "laco", "O que este laço imprime?", ["1 2 3", "0 1 2", "0 1 2 3", "1 2"], 1, "i começa em 0 e o laço roda enquanto i < 3, então imprime 0, 1 e 2. Quando i vale 3, a condição falha.", "", "A condição é i < 3, sem o igual.", `for (int i = 0; i < 3; i++) {\n    System.out.print(i + " ");\n}`),
+  N("Laços de repetição", "laco", "Quantas voltas dá este laço?", ["4", "5", "6", "Infinitas"], 1, "i vai de 1 até 5, com <=, e isso dá 5 voltas.", "", "Conte os valores de i.", `for (int i = 1; i <= 5; i++) { }`),
+  N("Laços de repetição", "laco", "O que há de errado neste laço?", ["Nada, ele termina sozinho", "Falta o i++, então a condição nunca fica falsa: laço infinito", "O while não aceita int", "A condição deveria ser i > 3"], 1, "Sem alterar i dentro do laço, i < 3 é sempre verdadeiro e o programa nunca sai do while.", "É uma esteira que nunca desliga.", "Algo muda o valor de i?", `int i = 0;\nwhile (i < 3) {\n    System.out.println(i);\n}`),
+  N("Laços de repetição", "laco", "Qual é a diferença entre while e do-while?", ["O do-while executa o bloco pelo menos uma vez", "O while executa pelo menos uma vez", "São idênticos", "O do-while só funciona com arrays"], 0, "O do-while testa a condição só depois de executar, então roda ao menos uma vez. O while testa antes e pode nem entrar.", "", "O 'do' vem antes do teste."),
+  N("Laços de repetição", "laco", "O que o break faz dentro de um laço?", ["Pula para a próxima volta", "Encerra o laço por completo", "Reinicia o laço", "Pausa por 1 segundo"], 1, "break sai do laço imediatamente. Quem pula só a volta atual é o continue.", "", "Break de 'quebrar'."),
+  N("Laços de repetição", "laco", "O que o continue faz dentro de um laço?", ["Encerra o laço", "Pula o resto desta volta e segue para a próxima", "Repete a mesma volta", "Sai do método"], 1, "continue interrompe só a volta atual e vai para a próxima.", "", "Continue de 'seguir adiante'."),
+  N("Laços de repetição", "laco", "Para que serve o for-each?", ["Percorrer cada item de um array ou lista, sem usar índice", "Repetir um número fixo de vezes", "Repetir enquanto uma condição for falsa", "Apagar itens da lista"], 0, "O for-each entrega cada item, um por vez, sem você controlar o índice: for (int n : notas).", "", "Dá o item, não a posição."),
+  N("Laços de repetição", "laco", "Qual é o valor de soma no final?", ["4", "6", "10", "15"], 2, "A soma acumula 1 + 2 + 3 + 4, e isso dá 10.", "", "Some cada valor de i.", `int soma = 0;\nfor (int i = 1; i <= 4; i++) {\n    soma += i;\n}`),
+  N("Laços de repetição", "laco", "Quando faz mais sentido usar while em vez de for?", ["Quando não se sabe quantas voltas serão, pois depende de uma condição", "Quando se sabe exatamente o número de voltas", "Nunca, o for faz tudo", "Só com texto"], 0, "O for combina com número de voltas conhecido. O while combina com 'repita até acontecer algo', como ler dados até o usuário digitar sair.", "", "A repetição depende de quê?"),
+
+  /* Manipulação de dados */
+  N("Manipulação de dados", "dados", "Qual método devolve o tamanho de uma List?", ["length", "size()", "count()", "length()"], 1, "List usa size(). O array usa length (sem parênteses), e a String usa length() (com parênteses).", "", "O array é diferente."),
+  N("Manipulação de dados", "dados", "Como pegar o primeiro item de uma List chamada nomes?", ["nomes[0]", "nomes.get(0)", "nomes.first", "nomes.0"], 1, "List não usa colchetes: usa o método get(índice), e o primeiro índice é 0.", "", "List usa método."),
+  N("Manipulação de dados", "dados", "Em um Map, o que é a chave?", ["O valor guardado", "O identificador único usado para achar o valor", "A posição numérica do item", "O tamanho do Map"], 1, "O Map guarda pares chave e valor. Você busca pela chave e recebe o valor, como achar o telefone pelo nome.", "É a agenda: o nome é a chave e o telefone é o valor.", "É o que você usa para procurar."),
+  N("Manipulação de dados", "dados", "O que acontece ao chamar put com uma chave que já existe no Map?", ["Dá erro", "Guarda um segundo valor", "O valor antigo é substituído pelo novo", "Nada, o novo é ignorado"], 2, "A chave é única, então um novo put com a mesma chave troca o valor.", "", "Chave repetida não existe."),
+  N("Manipulação de dados", "dados", "Qual é a diferença entre List e Set?", ["O Set não aceita itens repetidos", "O Set é sempre mais rápido", "A List não guarda objetos", "Não há diferença"], 0, "O Set (conjunto) descarta duplicados. A List aceita repetidos e mantém a ordem de inclusão.", "", "Pense em conjunto."),
+  N("Manipulação de dados", "dados", "O que este código imprime?", ["OLA", "ola", "Erro de compilação", "null"], 1, "String é imutável: toUpperCase() devolve um texto novo, e o original não muda. Como o resultado não foi guardado, s continua 'ola'.", "", "O resultado foi guardado?", `String s = "ola";\ns.toUpperCase();\nSystem.out.println(s);`),
+  N("Manipulação de dados", "dados", "Qual método devolve o tamanho de uma String?", ["size()", "length()", "length", "count()"], 1, "A String usa length() com parênteses. Cuidado: array é length sem parênteses.", "", "Com parênteses."),
+  N("Manipulação de dados", "dados", "Como buscar o valor de um Map pela chave?", ["mapa.get(chave)", "mapa[chave]", "mapa.find(chave)", "mapa.value(chave)"], 0, "O Map usa get(chave), que devolve o valor ou null se a chave não existe.", "", "O mesmo get da List."),
+  N("Manipulação de dados", "dados", "Qual é o valor de c?", ["J", "a", "v", "Erro de compilação"], 1, "charAt(1) devolve o caractere na posição 1. A contagem começa em 0 (J), então a posição 1 é 'a'.", "", "A contagem começa em 0.", `char c = "Java".charAt(1);`),
+
+  /* Sequência de algoritmos */
+  N("Sequência de algoritmos", "algo", "Antes de escrever código, qual é o melhor primeiro passo?", ["Escrever tudo de uma vez", "Entender o que entra, o que deve sair e as regras", "Escolher a IDE", "Copiar uma solução da internet"], 1, "Sem entender o problema (entrada, saída e regras), o código sai errado ou resolve outra coisa.", "", "Entender antes de fazer."),
+  N("Sequência de algoritmos", "algo", "O que é pseudocódigo?", ["Um código com erros", "Os passos escritos em português simples, sem a sintaxe do Java", "Um tipo de variável", "Uma ferramenta do IntelliJ"], 1, "É o rascunho dos passos em linguagem comum. Ajuda a pensar na lógica sem se preocupar com a sintaxe.", "", "Rascunho da lógica."),
+  N("Sequência de algoritmos", "algo", "O que é um caso de borda?", ["Um erro de digitação", "Uma situação limite, como lista vazia ou valor zero", "Uma variável global", "O último passo do algoritmo"], 1, "São os extremos que costumam quebrar o programa: lista vazia, número negativo, zero, um só item.", "", "Pense nos extremos."),
+  N("Sequência de algoritmos", "algo", "Em um algoritmo, o que são entrada e saída?", ["O que ele recebe para trabalhar e o que ele devolve", "O início e o fim do arquivo", "Os comandos import e export", "O teclado e o monitor, sempre"], 0, "Entrada é o dado recebido, como uma lista de notas. Saída é o resultado, como a maior nota.", "", "Dados que entram e dados que saem."),
+  N("Sequência de algoritmos", "algo", "Por que resolver um exemplo à mão antes de codar?", ["Para descobrir os passos e depois conferir o programa", "Porque o computador exige", "Para gastar menos memória", "Não há motivo"], 0, "Fazer à mão mostra os passos reais e dá um resultado esperado para comparar com a saída do programa.", "", "É o teste de mesa."),
+
+  /* Java e JVM */
+  N("Java e JVM", "jvm", "O que significa 'escreva uma vez, rode em qualquer lugar'?", ["O mesmo bytecode roda em qualquer sistema que tenha uma JVM", "O código nunca tem erros", "Não precisa compilar", "Funciona sem instalar nada"], 0, "O javac gera bytecode, e cada sistema tem sua JVM que o executa. Por isso o mesmo .class roda no Windows, no Linux ou no Mac.", "", "A JVM adapta para cada sistema."),
+  N("Java e JVM", "jvm", "Qual é a diferença entre JDK e JRE?", ["JDK é o kit para desenvolver (tem o javac), JRE só executa programas", "São o mesmo programa", "JRE compila e JDK só executa", "JDK é só para Windows"], 0, "O JDK inclui compilador e ferramentas. O JRE só traz o necessário para rodar programas já compilados.", "", "D de desenvolvimento."),
+  N("Java e JVM", "jvm", "Quais são as extensões do código-fonte e do bytecode?", [".java e .class", ".class e .java", ".jar e .java", ".js e .class"], 0, "Você escreve .java. O compilador gera .class com o bytecode.", "", "Escreve um, gera o outro."),
+  N("Java e JVM", "jvm", "Quando o compilador javac encontra um erro de sintaxe?", ["Antes de o programa rodar, na compilação", "Só durante a execução", "Nunca encontra", "Só no banco de dados"], 0, "Erros de sintaxe, como faltar um ponto e vírgula, são pegos na compilação, antes de rodar.", "", "O javac revisa antes."),
+
+  /* Projeto no IntelliJ */
+  N("Projeto no IntelliJ", "intellij", "Em um projeto Maven, qual arquivo lista as dependências?", ["main.java", "pom.xml", "target.xml", "README.md"], 1, "O pom.xml (Project Object Model) descreve o projeto e suas dependências.", "", "É um XML na raiz."),
+  N("Projeto no IntelliJ", "intellij", "Em um projeto Maven, onde fica o código-fonte principal?", ["src/main/java", "target/classes", "src/test/java", "lib/"], 0, "O código da aplicação fica em src/main/java e os testes ficam em src/test/java.", "", "Main de principal."),
+  N("Projeto no IntelliJ", "intellij", "Onde ficam os testes em um projeto Maven?", ["src/main/java", "src/test/java", "target/tests", "pom.xml"], 1, "Por convenção, os testes ficam em src/test/java, separados do código da aplicação.", "", "Test de teste."),
+
+  /* Classes e objetos */
+  N("Classes e objetos", "classes", "Quantos objetos podem ser criados a partir de uma classe?", ["Só um", "Quantos você quiser", "No máximo dez", "Nenhum, só classes abstratas"], 1, "A classe é o molde, e dá para criar quantos objetos quiser, cada um com seus próprios valores.", "É a forma de bolo: faz quantos bolos quiser.", "Pense em molde e cópias."),
+  N("Classes e objetos", "classes", "O que é um método?", ["Uma variável da classe", "Uma ação que o objeto sabe fazer", "Um tipo de dado", "Um arquivo do projeto"], 1, "Atributos guardam dados, e métodos são os comportamentos, como depositar() em uma Conta.", "", "É um verbo."),
+  N("Classes e objetos", "classes", "O que a palavra this representa?", ["A classe pai", "O próprio objeto que está executando o código", "Uma variável global", "O último objeto criado"], 1, "this é a referência ao objeto atual. Em this.nome = nome, o lado esquerdo é o atributo e o direito é o parâmetro.", "", "'Este' objeto aqui.", `public Cliente(String nome) {\n    this.nome = nome;\n}`),
+  N("Classes e objetos", "classes", "Se a classe não declara nenhum construtor, o que acontece?", ["Não dá para criar objetos", "O Java cria um construtor padrão, sem parâmetros", "O programa não compila", "Usa o construtor da classe Object com parâmetros"], 1, "Sem construtor escrito, o Java cria um padrão vazio. Se você escrever algum, o padrão deixa de existir.", "", "O Java ajuda."),
+  N("Classes e objetos", "classes", "Qual é a convenção para o nome de uma classe?", ["PascalCase: ContaBancaria", "camelCase: contaBancaria", "snake_case: conta_bancaria", "TUDO MAIÚSCULO"], 0, "Classes começam com maiúscula, e cada palavra seguinte também (PascalCase).", "", "Inicial maiúscula."),
+
+  /* Instanciar uma classe */
+  N("Instanciar uma classe", "inst", "Depois de Cliente c = new Cliente();, o que a variável c guarda?", ["O objeto inteiro", "Uma referência (endereço) para o objeto no heap", "Uma cópia da classe", "O nome da classe"], 1, "Variáveis de objeto guardam só a referência. O objeto de verdade fica no heap.", "É um controle remoto: ele aponta para a TV, mas não é a TV.", "Variável de objeto aponta."),
+  N("Instanciar uma classe", "inst", "O que o código imprime?", ["Ana", "Bia", "null", "Erro de compilação"], 1, "b = a faz as duas variáveis apontarem para o mesmo objeto. Mudar o nome por b muda o que a enxerga.", "Dois controles remotos da mesma TV.", "Existe um objeto ou dois?", `Cliente a = new Cliente("Ana");\nCliente b = a;\nb.setNome("Bia");\nSystem.out.println(a.getNome());`),
+  N("Instanciar uma classe", "inst", "Como comparar o conteúdo de duas Strings?", ["a == b", "a.equals(b)", "a = b", "a.compare(b)"], 1, "== compara referências, e equals() compara o conteúdo (a String sobrescreve o equals).", "", "O método da classe Object, sobrescrito na String."),
+  N("Instanciar uma classe", "inst", "Qual é o resultado de a == b?", ["true", "false", "Erro de compilação", "Depende do computador"], 1, "new cria dois objetos diferentes. Mesmo com o mesmo texto, == compara referências, e elas são diferentes.", "", "new cria um objeto novo.", `String a = new String("oi");\nString b = new String("oi");\nSystem.out.println(a == b);`),
+
+  /* Encapsulamento */
+  N("Encapsulamento", "enc", "Por que os atributos costumam ser private?", ["Para economizar memória", "Para impedir que o código de fora altere o valor sem passar pelas regras da classe", "Porque o Java exige", "Para o código rodar mais rápido"], 1, "Com private, a classe controla como o dado muda, validando por métodos como depositar().", "É o cofre do banco: só se mexe pelo caixa.", "Quem pode mexer?"),
+  N("Encapsulamento", "enc", "O que faz um setter?", ["Lê o valor do atributo", "Altera o valor do atributo, podendo validar antes", "Apaga o objeto", "Cria o construtor"], 1, "O setter (setNome, setSaldo) muda o atributo e é o lugar certo para validar.", "", "Set é 'definir'."),
+  N("Encapsulamento", "enc", "Qual é a ideia central do encapsulamento?", ["Esconder os detalhes internos e expor só o necessário", "Criar muitas classes", "Herdar de várias classes", "Deixar tudo público"], 0, "Encapsular é proteger o estado interno e oferecer métodos controlados para usá-lo.", "", "Esconder para proteger."),
+  N("Encapsulamento", "enc", "Qual modificador permite acesso apenas dentro da própria classe?", ["public", "protected", "private", "static"], 2, "private restringe o acesso à classe onde o membro foi declarado.", "", "É o mais restrito."),
+  N("Encapsulamento", "enc", "Uma classe Conta tem saldo private e só o método depositar() altera o saldo. O que isso garante?", ["Que o saldo só muda pelas regras do método, como não aceitar valor negativo", "Que o saldo nunca muda", "Que o código fica mais lento", "Que o saldo vira público"], 0, "Toda mudança passa pelo método, e as regras ficam em um só lugar.", "", "Um único caminho."),
+
+  /* Herança e polimorfismo */
+  N("Herança e polimorfismo", "poli", "Qual palavra chama o construtor da classe pai?", ["parent()", "super()", "base()", "this()"], 1, "super(...) chama o construtor da classe pai. this(...) chama outro construtor da mesma classe.", "", "Super, de superclasse."),
+  N("Herança e polimorfismo", "poli", "O que o código imprime, sabendo que Cachorro sobrescreve emitirSom() para imprimir 'Au'?", ["O som genérico do Animal", "Au", "Erro de compilação", "Nada"], 1, "O Java escolhe o método pelo objeto real (Cachorro), não pelo tipo da variável (Animal). Isso é polimorfismo.", "", "O objeto real manda.", `Animal a = new Cachorro();\na.emitirSom();`),
+  N("Herança e polimorfismo", "poli", "De quantas classes uma classe Java pode herdar?", ["De uma só", "De duas", "De quantas quiser", "De nenhuma"], 0, "Java tem herança simples de classes. Para várias capacidades, uma classe pode implementar várias interfaces.", "", "Herança simples."),
+  N("Herança e polimorfismo", "poli", "Para que serve @Override?", ["Apagar o método da classe pai", "Indicar que o método sobrescreve o da classe pai, e o compilador confere", "Criar uma classe nova", "Deixar o método privado"], 1, "Se o método não existir na classe pai ou a assinatura estiver errada, o compilador avisa.", "", "Um cinto de segurança."),
+
+  /* Abstração */
+  N("Abstração", "abs", "É possível criar um objeto de uma classe abstrata com new?", ["Sim, sempre", "Não, só das classes concretas que herdam dela", "Só com interfaces", "Só dentro do main"], 1, "Classe abstrata é um modelo incompleto e não pode ser instanciada.", "", "Faltam pedaços."),
+  N("Abstração", "abs", "Quantas interfaces uma classe pode implementar?", ["Apenas uma", "Várias", "Nenhuma", "No máximo duas"], 1, "Uma classe pode implementar várias interfaces, o que ajuda a contornar a herança simples.", "", "Contrato multiplicável."),
+  N("Abstração", "abs", "Qual é a vantagem de programar para a interface, como Pagamento p = new Pix()?", ["O código fica mais curto", "Dá para trocar a implementação sem mudar quem usa", "O código roda mais rápido", "Evita usar new"], 1, "Quem usa só conhece o contrato, então trocar Pix por Boleto não exige mexer no resto.", "É a tomada: o aparelho não se importa com a usina.", "O que depende de quê?"),
+
+  /* Estrutura de dados */
+  N("Estrutura de dados", "ed", "Qual método adiciona um item ao final de uma List?", ["push()", "add()", "insert()", "append()"], 1, "A List usa add(item). push é da pilha, e append é do Python.", "", "É o add."),
+  N("Estrutura de dados", "ed", "Qual estrutura não aceita itens repetidos?", ["List", "Set", "Array", "Queue"], 1, "Set guarda itens únicos, e o duplicado é ignorado.", "", "Conjunto."),
+  N("Estrutura de dados", "ed", "Em uma fila (Queue), qual item sai primeiro?", ["O último que entrou", "O primeiro que entrou", "O menor", "Um aleatório"], 1, "Fila é FIFO (first in, first out): quem chega primeiro, sai primeiro.", "É a fila do banco.", "Como uma fila de pessoas."),
+  N("Estrutura de dados", "ed", "Em uma pilha (Stack), qual item sai primeiro?", ["O primeiro que entrou", "O último que entrou", "O maior", "Um aleatório"], 1, "Pilha é LIFO (last in, first out): o último a entrar é o primeiro a sair.", "É uma pilha de pratos: pega-se o de cima.", "Pense em pratos."),
+
+  /* Tratamento de exceções */
+  N("Tratamento de exceções", "exc", "O que é uma exceção checked?", ["Uma que o compilador obriga a tratar ou declarar, como IOException", "Uma que nunca acontece", "Uma que só ocorre no banco", "Uma que o Java ignora"], 0, "As checked (verificadas) exigem try/catch ou throws. As unchecked (RuntimeException) não exigem.", "", "O compilador cobra."),
+  N("Tratamento de exceções", "exc", "O que acontece com uma exceção que ninguém trata?", ["Nada, o programa segue", "O programa encerra e mostra o stack trace", "O Java corrige sozinho", "O código é recompilado"], 1, "Sem tratamento, a exceção sobe até o main e o programa termina, imprimindo o stack trace.", "", "Ela sobe pelos métodos."),
+  N("Tratamento de exceções", "exc", "Para que serve throws na assinatura de um método?", ["Para lançar a exceção neste ponto", "Para avisar que o método pode lançar essa exceção", "Para capturar a exceção", "Para ignorar erros"], 1, "throws declara o risco, e quem chamar precisa tratar ou repassar. Quem lança de fato é o throw, dentro do método.", "", "throws com s é aviso."),
+  N("Tratamento de exceções", "exc", "Qual exceção acontece ao dividir um int por zero?", ["NullPointerException", "ArithmeticException", "NumberFormatException", "IOException"], 1, "A divisão inteira por zero lança ArithmeticException. Com decimais, o resultado seria Infinity.", "", "Exceção da matemática."),
+  N("Tratamento de exceções", "exc", "Quando acontece uma NullPointerException?", ["Ao usar um método ou atributo de uma variável que vale null", "Ao dividir por zero", "Ao acessar o índice 10 de um array de 3 itens", "Ao digitar letras em vez de números"], 0, "Você tenta usar um objeto que não existe: a variável está null.", "É apertar o botão de um controle que não está ligado a nenhuma TV.", "O objeto existe?"),
+  N("Tratamento de exceções", "exc", "Em try { } catch (Exception e) { } finally { }, quando o finally roda?", ["Só se houver exceção", "Só se não houver exceção", "Sempre, com ou sem exceção", "Nunca"], 2, "finally é para o que precisa acontecer de qualquer jeito, como fechar um arquivo ou uma conexão.", "", "Roda sempre.")
+);
+
+/* ---------- reforço: método, desafios e projetos ---------- */
+PERGUNTAS.push(
+  /* Como resolver um desafio */
+  N("Como resolver um desafio", "metodo", "Qual é a ordem dos passos para resolver um problema de lógica?", ["Codar, testar, entender, dividir", "Entender, exemplo à mão, dividir, pseudocódigo, codar, testar", "Pseudocódigo, codar, entender, testar", "Testar, codar, entender"], 1, "Entender e resolver à mão vêm antes do código. O código é o penúltimo passo, e o teste fecha o ciclo.", "É como cozinhar: leia a receita, separe os ingredientes e só depois ligue o fogo.", "O código não é o primeiro passo."),
+  N("Como resolver um desafio", "metodo", "Para que serve dividir o problema em partes menores?", ["Para escrever mais linhas", "Porque cada parte pequena é mais fácil de pensar, codar e testar", "Para usar mais classes", "Não serve para nada"], 1, "Problemas grandes viram vários pequenos. Resolver e testar cada um é bem mais fácil do que atacar tudo junto.", "", "Pedaços pequenos."),
+  N("Como resolver um desafio", "metodo", "Qual conjunto de entradas é um bom teste de borda para um método que soma uma lista?", ["Só uma lista com 3 números normais", "Lista vazia, lista com um item e valores negativos", "Só números grandes", "Somente números iguais"], 1, "Os extremos (vazio, um item, negativo, zero) são onde os erros costumam aparecer.", "", "Pense nos extremos."),
+  N("Como resolver um desafio", "metodo", "Você precisa desfazer as últimas ações do usuário, como o Ctrl+Z. Qual estrutura combina?", ["Fila (Queue)", "Pilha (Stack)", "Set", "Array fixo"], 1, "O último item que entrou (a última ação) é o primeiro a ser desfeito. Isso é LIFO, a pilha.", "", "A última ação sai primeiro."),
+  N("Como resolver um desafio", "metodo", "Você precisa descobrir se um e-mail já foi cadastrado, sem repetir. Qual estrutura é mais indicada?", ["Set", "Pilha", "Fila", "Array de texto sem busca"], 0, "O Set não aceita repetidos e verifica se contém um item com rapidez (contains).", "", "Sem repetidos."),
+  N("Como resolver um desafio", "metodo", "Ao pedir ajuda para a IA em um desafio, o que treina mais o seu raciocínio?", ["Pedir a solução pronta", "Pedir uma dica e tentar de novo", "Copiar e colar sem ler", "Pular o desafio"], 1, "Dica mantém o trabalho de pensar com você. A solução pronta só passa a sensação de ter entendido.", "", "Quem pensa é você."),
+
+  /* Desafio: troco */
+  N("Desafio: troco do caixa", "troco", "No algoritmo do troco, o que representa o valor de troco % nota?", ["A quantidade de notas usadas", "O que sobra para as próximas notas", "A maior nota possível", "O número de voltas do laço"], 1, "A divisão dá a quantidade de notas, e o % dá o resto, que vira o novo valor a ser devolvido.", "", "Resto."),
+  N("Desafio: troco do caixa", "troco", "Quantas notas de 100 cabem em um troco de 289?", ["3", "2", "1", "89"], 1, "289 / 100 dá 2 em divisão de inteiros, e sobram 89.", "", "Divisão de inteiros."),
+  N("Desafio: troco do caixa", "troco", "Qual é a saída esperada para um troco de 0?", ["Nenhuma nota é impressa", "Uma nota de 1", "Erro", "Uma nota de 100"], 0, "Sem troco, nenhuma nota é necessária. É um caso de borda que o if (qtd > 0) já resolve.", "", "Nada a devolver."),
+  N("Desafio: troco do caixa", "troco", "Para que serve o if (qtd > 0) dentro do laço do troco?", ["Evitar imprimir linhas como '0 x R$ 20'", "Acelerar o programa", "Evitar o estouro do int", "Trocar a ordem das notas"], 0, "Só mostra as notas que realmente foram usadas.", "", "Zero notas não interessa."),
+  N("Desafio: troco do caixa", "troco", "Qual é a ideia do algoritmo guloso (greedy) no troco?", ["Testar todas as combinações possíveis", "Em cada passo, pegar o máximo possível da maior nota que ainda cabe", "Usar sempre a menor nota", "Sortear as notas"], 1, "Pegar sempre a maior nota possível leva ao menor número de notas, para esse conjunto de notas (100, 50, 20, 10, 5, 2, 1).", "", "Maior primeiro."),
+  N("Desafio: troco do caixa", "troco", "Qual é o resultado de 289 % 100?", ["2", "89", "28", "9"], 1, "O resto da divisão de 289 por 100 é 89.", "", "Sobra depois de 2 notas de 100."),
+
+  /* Desafio: contar votos */
+  N("Desafio: contar votos", "votos", "Qual é a chave e qual é o valor no Map<String, Integer> dos votos?", ["Chave: o candidato; valor: a quantidade de votos", "Chave: a quantidade; valor: o candidato", "Os dois são o candidato", "Os dois são a quantidade"], 0, "Você procura pelo candidato (chave) e recebe quantos votos ele tem (valor).", "", "Procura-se pelo nome."),
+  N("Desafio: contar votos", "votos", "Qual linha conta mais um voto para o candidato?", ["contagem.add(voto);", "contagem.put(voto, contagem.getOrDefault(voto, 0) + 1);", "contagem.get(voto)++;", "contagem.count(voto);"], 1, "getOrDefault devolve 0 se o candidato ainda não existe, e o put grava o novo total.", "", "Padrão de contar."),
+  N("Desafio: contar votos", "votos", "Como achar o candidato vencedor depois de contar?", ["Pegar o primeiro do Map", "Percorrer os pares guardando o maior valor", "Ordenar o Map com sort()", "Somar todos os votos"], 1, "Percorra o entrySet() e vá guardando o par com o maior valor visto até agora.", "", "Guarde o maior."),
+  N("Desafio: contar votos", "votos", "Qual implementação de Map mantém as chaves ordenadas?", ["HashMap", "TreeMap", "ArrayList", "HashSet"], 1, "TreeMap ordena pelas chaves. HashMap não garante ordem, e LinkedHashMap mantém a ordem de entrada.", "", "Tree = árvore ordenada."),
+  N("Desafio: contar votos", "votos", "O que acontece ao chamar get com uma chave que não existe no Map?", ["Lança exceção", "Devolve null", "Devolve 0", "Cria a chave"], 1, "O get devolve null. Por isso se usa getOrDefault para contagens.", "", "Ausência é null."),
+  N("Desafio: contar votos", "votos", "Em um HashMap, o que garante a ordem dos itens ao percorrer?", ["A ordem em que foram inseridos", "A ordem alfabética", "Nada, a ordem não é garantida", "A ordem decrescente de valores"], 2, "O HashMap não garante ordem. Se precisar de uma ordem, use LinkedHashMap ou TreeMap.", "", "Ordem não faz parte do contrato."),
+
+  /* Desafio: validar parênteses */
+  N("Desafio: validar parênteses", "parenteses", "Para validar parênteses, o que fazer ao ler um caractere de abertura, como (?", ["Desempilhar", "Empilhar", "Ignorar", "Terminar o programa"], 1, "Abriu: empilha. Fechou: desempilha e confere se combina.", "", "Abriu, guarda."),
+  N("Desafio: validar parênteses", "parenteses", "A expressão ')(' é válida?", ["Sim", "Não: começa fechando sem ter aberto nada", "Só se tiver números", "Depende do Java"], 1, "Ao ler o primeiro ), a pilha está vazia, então não há par para ele. A expressão é inválida.", "", "A pilha está vazia."),
+  N("Desafio: validar parênteses", "parenteses", "Qual dessas expressões é válida?", ["({[)]}", "([{}])", "(()", "{[}"], 1, "Em ([{}]) cada abertura é fechada na ordem inversa. As outras cruzam os pares ou sobram aberturas.", "", "Último a abrir, primeiro a fechar."),
+  N("Desafio: validar parênteses", "parenteses", "O que a classe ArrayDeque faz no desafio?", ["Serve como pilha, com push, pop e peek", "Ordena a expressão", "Conta os caracteres", "Valida o texto sozinha"], 0, "O ArrayDeque é a estrutura recomendada para pilha e fila em Java moderno.", "", "Estrutura de apoio."),
+  N("Desafio: validar parênteses", "parenteses", "O que acontece se, ao fechar, a pilha estiver vazia?", ["Tudo certo", "A expressão é inválida", "Empilha o fechamento", "O programa trava"], 1, "Não existe abertura correspondente. Tentar o pop em pilha vazia também causaria erro.", "", "Falta o par."),
+  N("Desafio: validar parênteses", "parenteses", "Por que a pilha é a estrutura certa para esse problema?", ["Porque o último a abrir deve ser o primeiro a fechar", "Porque é a mais rápida de todas", "Porque a fila não existe em Java", "Porque guarda números"], 0, "Os parênteses se aninham: o mais interno fecha primeiro, exatamente o comportamento LIFO.", "", "Aninhamento."),
+
+  /* Desafio: fila de atendimento */
+  N("Desafio: fila de atendimento", "fila", "Qual método coloca uma pessoa no fim da fila?", ["poll()", "add()", "peek()", "pop()"], 1, "add (ou offer) insere no fim. poll tira do início, e peek só olha.", "", "Entrar na fila."),
+  N("Desafio: fila de atendimento", "fila", "O que poll() devolve quando a fila está vazia?", ["Lança exceção", "null", "0", "Uma pessoa em branco"], 1, "poll devolve null com a fila vazia, e remove lança NoSuchElementException.", "", "Tem um jeito seguro."),
+  N("Desafio: fila de atendimento", "fila", "Qual é o padrão de laço para atender toda a fila?", ["while (!fila.isEmpty()) { poll e processar }", "for (int i = 0; i < 10; i++)", "do { } while (true);", "if (fila.size() > 0)"], 0, "Atende enquanto houver gente: tira o próximo e processa, até esvaziar.", "", "Enquanto não está vazia."),
+  N("Desafio: fila de atendimento", "fila", "Uma fila de atendimento comum segue qual regra?", ["LIFO", "FIFO", "Aleatória", "Por prioridade"], 1, "FIFO (first in, first out): quem chega primeiro é atendido primeiro.", "", "Primeiro a chegar."),
+  N("Desafio: fila de atendimento", "fila", "Em um pronto-socorro, os casos graves passam na frente. Qual estrutura combina?", ["Queue comum", "Stack", "PriorityQueue", "Array"], 2, "PriorityQueue atende por prioridade e não por ordem de chegada.", "", "Prioridade."),
+
+  /* Desafio: busca binária */
+  N("Desafio: busca binária", "binaria", "Em um array ordenado, o alvo é 7 e o item do meio é 10. Para onde a busca binária continua?", ["Para a metade da direita", "Para a metade da esquerda", "Para o primeiro item", "Termina sem achar"], 1, "7 é menor que 10, então só pode estar na metade esquerda. A direita é descartada.", "", "Menor vai para a esquerda."),
+  N("Desafio: busca binária", "binaria", "O que a busca binária devolve quando o item não existe?", ["0", "-1 (por convenção)", "null", "O último índice"], 1, "Quando ini passa de fim, o item não existe, e por convenção devolve-se -1.", "", "Um índice impossível."),
+  N("Desafio: busca binária", "binaria", "Quantas comparações, no máximo, para achar um item em 1024 itens ordenados?", ["Cerca de 10", "Cerca de 100", "1024", "512"], 0, "Cada comparação divide por 2, e 2 elevado a 10 é 1024. Por isso dá cerca de 10 passos.", "É adivinhar um número de 1 a 1024 perguntando maior ou menor.", "Quantas vezes divide por 2?"),
+  N("Desafio: busca binária", "binaria", "Por que ini = meio + 1 e fim = meio - 1, e não apenas meio?", ["Para o laço sempre avançar, já que o meio foi testado e descartado", "Por estilo", "Para economizar memória", "Porque o Java exige"], 0, "Sem o +1/-1, o intervalo pode nunca encolher e criar um laço infinito.", "", "O meio já foi testado."),
+  N("Desafio: busca binária", "binaria", "Qual é a condição do laço da busca binária?", ["while (ini <= fim)", "while (ini > fim)", "while (true)", "while (meio != 0)"], 0, "Continua enquanto ainda existir um intervalo a pesquisar.", "", "O intervalo existe."),
+  N("Desafio: busca binária", "binaria", "Qual é a vantagem da busca binária sobre a linear em uma lista ordenada de 1 milhão de itens?", ["Cerca de 20 comparações contra até 1 milhão", "Nenhuma", "Usa menos código", "Funciona em lista desordenada"], 0, "A busca binária cresce com o logaritmo do tamanho, e a linear cresce com o próprio tamanho.", "", "Divide ao meio."),
+
+  /* Desafio: ordenar uma lista */
+  N("Desafio: ordenar uma lista", "ordenacao", "O que o bubble sort compara a cada passo?", ["Dois itens vizinhos", "O primeiro e o último", "Todos os itens de uma vez", "O maior e o menor"], 0, "Compara vizinhos e troca se estiverem fora de ordem. Repetindo, os maiores sobem para o fim.", "É como bolhas subindo.", "Vizinhos."),
+  N("Desafio: ordenar uma lista", "ordenacao", "Qual é a complexidade do bubble sort?", ["O(n²)", "O(n)", "O(log n)", "O(1)"], 0, "Para n itens, são cerca de n voltas de n comparações, e por isso é lento em listas grandes.", "", "Dois laços aninhados."),
+  N("Desafio: ordenar uma lista", "ordenacao", "Como ordenar uma lista de objetos Cliente por nome em Java?", ["Com um Comparator", "Com um laço while sem critério", "Não é possível", "Com equals()"], 0, "O Comparator define como comparar dois objetos, e lista.sort(Comparator.comparing(Cliente::getNome)) ordena.", "", "Critério de comparação."),
+  N("Desafio: ordenar uma lista", "ordenacao", "Por que o laço interno do bubble sort encurta a cada rodada?", ["Porque o maior item restante já foi para o fim", "Porque a lista diminui", "Por otimização do Java", "Porque os itens ficam iguais"], 0, "Depois de cada rodada, o fim já está ordenado, então não precisa comparar de novo.", "", "O fim está pronto."),
+  N("Desafio: ordenar uma lista", "ordenacao", "O que acontece na troca sem variável temporária (a = b; b = a;)?", ["Os dois ficam com o valor de b e o valor antigo de a se perde", "Troca normalmente", "Dá erro de compilação", "Ordena os dois"], 0, "Ao fazer a = b, o valor antigo de a é sobrescrito. A variável temporária guarda esse valor antes.", "É trocar o conteúdo de dois copos: precisa de um terceiro copo.", "Perdeu o valor de a."),
+  N("Desafio: ordenar uma lista", "ordenacao", "No dia a dia de trabalho, qual é a melhor forma de ordenar?", ["Escrever um bubble sort", "Usar Arrays.sort ou lista.sort", "Ordenar manualmente", "Evitar ordenar"], 1, "As funções da biblioteca são testadas e muito mais eficientes. O bubble sort é bom para aprender.", "", "Não reinvente."),
+
+  /* Projeto 1: Conta bancária */
+  N("Projeto 1: Conta bancária", "projconta", "O que a classe Conta deve fazer ao receber depositar(-50)?", ["Aceitar e subtrair", "Rejeitar com uma exceção de valor inválido", "Ignorar sem avisar", "Zerar o saldo"], 1, "Valor negativo viola a regra de negócio, e a classe deve recusar com uma mensagem clara.", "", "Proteja a regra."),
+  N("Projeto 1: Conta bancária", "projconta", "Quais são os atributos de uma Conta simples?", ["Titular, número e saldo", "Só os métodos", "Apenas o main", "O banco de dados"], 0, "Atributos guardam o estado: quem é o dono, o número e o saldo atual.", "", "O que a conta tem."),
+  N("Projeto 1: Conta bancária", "projconta", "Qual é o saldo após depositar(100) e sacar(30), começando com 0?", ["130", "70", "100", "-30"], 1, "0 + 100 - 30 = 70.", "", "Faça a conta."),
+  N("Projeto 1: Conta bancária", "projconta", "Onde deve ficar a regra 'não sacar mais que o saldo'?", ["No main", "Dentro do método sacar da própria Conta", "Em outra classe qualquer", "No banco de dados apenas"], 1, "A classe que guarda o saldo é responsável por proteger a regra, evitando que fique espalhada pelo código.", "", "Quem tem o dado cuida da regra."),
+  N("Projeto 1: Conta bancária", "projconta", "O que um extrato (lista de movimentações) acrescenta à Conta?", ["Um histórico do que aconteceu", "Mais velocidade", "Nada", "Um segundo saldo"], 0, "O extrato registra cada depósito e saque, e permite auditar como o saldo chegou ao valor atual.", "", "Histórico."),
+  N("Projeto 1: Conta bancária", "projconta", "Por que testar sacar com saldo insuficiente?", ["É um caso de borda em que a regra deve acionar a exceção", "Para ver se o Java compila", "Para gerar saldo negativo", "Não precisa testar"], 0, "Testar os limites confirma que as regras funcionam justamente onde costumam falhar.", "", "O limite da regra."),
+
+  /* Projeto 2: Pedido com itens */
+  N("Projeto 2: Pedido com itens", "projpedido", "O Pedido tem vários itens. Qual atributo representa isso?", ["Um List<ItemPedido>", "Um único ItemPedido", "Um int", "Um String"], 0, "Um pedido tem uma lista de itens, criada no construtor para nunca ficar null.", "", "Vários itens."),
+  N("Projeto 2: Pedido com itens", "projpedido", "Como o total do Pedido é calculado?", ["O Pedido soma o subtotal de cada item", "O main soma tudo", "É digitado manualmente", "O ItemPedido soma os outros itens"], 0, "Cada item calcula o seu subtotal, e o pedido soma esses valores. Cada classe cuida do que conhece.", "", "Pedido soma, item calcula."),
+  N("Projeto 2: Pedido com itens", "projpedido", "Um item custa 12,50 e a quantidade é 3. Qual é o subtotal?", ["37,50", "15,50", "36,00", "12,50"], 0, "12,50 vezes 3 é 37,50.", "", "Preço vezes quantidade."),
+  N("Projeto 2: Pedido com itens", "projpedido", "Qual é a relação entre Pedido e ItemPedido?", ["Um Pedido tem vários itens", "O ItemPedido tem vários pedidos", "Não há relação", "São a mesma coisa"], 0, "É uma relação um-para-muitos, parecida com @OneToMany do JPA.", "", "Quem tem quem."),
+  N("Projeto 2: Pedido com itens", "projpedido", "Qual é a melhor forma de guardar o preço no ItemPedido?", ["Copiar o preço do produto na hora da compra", "Ler sempre o preço atual do produto", "Não guardar o preço", "Guardar como texto"], 0, "O preço muda com o tempo, e o pedido antigo deve manter o valor pago, o chamado snapshot.", "", "Preço da época."),
+  N("Projeto 2: Pedido com itens", "projpedido", "O que acontece se a lista de itens não for criada no construtor?", ["Ao adicionar um item, ocorre NullPointerException", "Nada", "O Java cria sozinho", "O pedido fica vazio e funciona"], 0, "O atributo de objeto começa em null, e chamar add em null lança NullPointerException.", "", "Atributo de objeto começa em null."),
+
+  /* Projeto 3: Cadastro de clientes */
+  N("Projeto 3: Cadastro de clientes", "projcrud", "Qual operação do CRUD corresponde ao SQL INSERT?", ["Create", "Read", "Update", "Delete"], 0, "Create é cadastrar, Read é consultar (SELECT), Update é alterar (UPDATE) e Delete é remover (DELETE).", "", "Criar."),
+  N("Projeto 3: Cadastro de clientes", "projcrud", "Qual camada decide a regra 'não pode haver e-mail repetido'?", ["Service", "Repository", "Main apenas", "O banco jamais"], 0, "O Service decide as regras de negócio, e o Repository só guarda e busca.", "", "Quem decide."),
+  N("Projeto 3: Cadastro de clientes", "projcrud", "Qual é o papel do Repository?", ["Guardar e buscar os dados", "Validar regras", "Mostrar a tela", "Calcular impostos"], 0, "O Repository esconde onde os dados ficam, seja em memória ou em banco, e oferece operações como salvar e buscar.", "", "Guarda e busca."),
+  N("Projeto 3: Cadastro de clientes", "projcrud", "Por que usar um Map<Long, Cliente> com contador de ids no projeto?", ["Simula o banco: busca por id e gera ids únicos", "É a única estrutura do Java", "Para ordenar clientes", "Para evitar classes"], 0, "O Map permite achar o cliente rápido pelo id, e o contador gera ids sem repetir, como um banco faria.", "", "Banco de mentirinha."),
+  N("Projeto 3: Cadastro de clientes", "projcrud", "O que o Service deve fazer se buscar um id que não existe?", ["Lançar uma exceção de não encontrado", "Devolver outro cliente", "Ignorar", "Criar um cliente vazio"], 0, "Na API, isso vira o status 404. Mesmo desenho que você usará no Spring.", "", "404."),
+  N("Projeto 3: Cadastro de clientes", "projcrud", "Qual é a vantagem de o Service depender de uma interface de repositório?", ["Dá para trocar o repositório (memória por banco) sem mudar o Service", "O código fica menor", "A interface é mais rápida", "Evita testes"], 0, "Quem usa só conhece o contrato. Isso também facilita testar com um repositório falso.", "", "Contrato.")
+);
+
+/* ---------- reforço: banco, git, arquitetura, Spring/JPA, pedidos, testes, streams, SQL ---------- */
+PERGUNTAS.push(
+  /* Banco de dados */
+  N("Banco de dados", "bd", "O que acontece com um UPDATE sem a cláusula WHERE?", ["Altera todas as linhas da tabela", "Não altera nada", "Dá erro de sintaxe", "Altera só a primeira linha"], 0, "Sem WHERE, o comando vale para a tabela inteira. É um erro clássico e perigoso: sempre confira o WHERE.", "É mandar uma mensagem para todos os contatos em vez de um só.", "Qual filtro está faltando?", `UPDATE clientes SET nome = 'Ana';`),
+  N("Banco de dados", "bd", "Qual comando SQL apaga linhas de uma tabela?", ["REMOVE", "DELETE", "DROP ROW", "CLEAR"], 1, "DELETE FROM tabela WHERE ... apaga linhas. DROP TABLE apaga a tabela inteira.", "", "O D do CRUD."),
+  N("Banco de dados", "bd", "Qual é a função da cláusula WHERE em um SELECT?", ["Filtrar quais linhas voltam", "Ordenar o resultado", "Escolher as colunas", "Juntar tabelas"], 0, "O WHERE mantém só as linhas que atendem à condição. O ORDER BY ordena, e o SELECT escolhe as colunas.", "", "Filtro."),
+  N("Banco de dados", "bd", "O que garante a restrição UNIQUE em uma coluna de e-mail?", ["Que não existam dois e-mails iguais na tabela", "Que o e-mail seja válido", "Que o e-mail seja obrigatório", "Que o e-mail seja criptografado"], 0, "UNIQUE impede valores repetidos na coluna. Para ser obrigatória, é preciso NOT NULL.", "", "Sem repetição."),
+  N("Banco de dados", "bd", "Você já aplicou a migração V1 do Flyway e precisa mudar uma coluna. O que fazer?", ["Editar o arquivo V1", "Criar uma nova migração (V2)", "Apagar o banco sempre", "Alterar direto no banco sem registrar"], 1, "Migrações aplicadas não devem ser editadas: o Flyway confere se o arquivo mudou e acusa erro. A mudança vai em uma nova versão.", "É um histórico contábil: não se rasura, faz-se um novo lançamento.", "Histórico não se reescreve."),
+  N("Banco de dados", "bd", "Qual é a diferença entre chave primária e chave estrangeira?", ["A primária identifica a linha; a estrangeira aponta para a primária de outra tabela", "A estrangeira identifica a própria linha", "São a mesma coisa", "A primária só existe em tabelas pequenas"], 0, "A PK é a identidade da linha. A FK é a ligação com outra tabela, como cliente_id em endereco.", "", "Identidade x ligação."),
+
+  /* Git e GitHub */
+  N("Git e GitHub", "git", "Qual comando mostra o que mudou e o que está pronto para o commit?", ["git status", "git push", "git clone", "git init"], 0, "git status lista arquivos modificados, os preparados (staged) e os não rastreados.", "", "Situação atual."),
+  N("Git e GitHub", "git", "Qual é a ordem correta para registrar uma mudança?", ["commit, add, push", "add, commit, push", "push, add, commit", "add, push, commit"], 1, "git add prepara os arquivos, git commit registra a foto localmente e git push envia ao GitHub.", "", "Prepara, registra, envia."),
+  N("Git e GitHub", "git", "Para que serve o arquivo .gitignore?", ["Listar arquivos que o Git não deve versionar, como senhas e a pasta target", "Apagar arquivos do computador", "Guardar o histórico", "Criar branches"], 0, "Nele ficam arquivos gerados ou secretos (target/, .env) que não entram no repositório.", "", "O que ignorar."),
+  N("Git e GitHub", "git", "O que é um conflito de merge?", ["Quando duas branches mudaram o mesmo trecho e o Git não sabe qual manter", "Um erro de internet", "Um commit sem mensagem", "Uma branch apagada"], 0, "O Git pede que você escolha manualmente qual versão (ou a combinação) fica.", "", "Dois editaram a mesma linha."),
+  N("Git e GitHub", "git", "Qual é a diferença entre git pull e git push?", ["pull traz as mudanças do GitHub e push envia as suas", "pull envia e push traz", "São iguais", "pull apaga o histórico"], 0, "Pull baixa e integra o que está no remoto. Push publica seus commits.", "", "Puxar x empurrar."),
+  N("Git e GitHub", "git", "Qual é uma boa mensagem de commit?", ["'arrumei coisas'", "'Valida e-mail duplicado no cadastro de cliente'", "'asdf'", "'commit 2'"], 1, "Boa mensagem diz o que mudou e por quê, de forma curta e clara, para o futuro você entender.", "", "Descreva a mudança."),
+  N("Git e GitHub", "git", "O que git clone faz?", ["Copia um repositório remoto para o seu computador", "Apaga o repositório", "Cria uma branch", "Envia commits"], 0, "Clone baixa o projeto inteiro com o histórico para uma pasta local.", "", "Cópia."),
+
+  /* Arquitetura e MVC */
+  N("Arquitetura", "arq", "O que é um DTO?", ["Um objeto só para entrada e saída de dados da API, sem regras", "Uma tabela do banco", "Um tipo de exceção", "Uma anotação do Spring"], 0, "O DTO (Data Transfer Object) define o formato que a API recebe e devolve, separado da entidade do banco.", "", "Transporta dados."),
+  N("Arquitetura", "arq", "Por que não devolver a entidade do banco direto na resposta da API?", ["Para não expor campos internos e não acoplar a API à tabela", "Porque o Java não permite", "Porque é mais lento", "Porque a entidade não tem getters"], 0, "Um DTO deixa você escolher o que mostrar e evoluir banco e API separadamente.", "", "Controle do que sai."),
+  N("Arquitetura", "arq", "Qual é a responsabilidade do Controller?", ["Receber a requisição, validar o formato e chamar o Service", "Aplicar todas as regras de negócio", "Escrever SQL", "Gerar o HTML"], 0, "O Controller é a porta de entrada: traduz HTTP para chamadas ao Service e devolve a resposta.", "", "Porta de entrada."),
+  N("Arquitetura", "arq", "O Controller pode chamar o Repository direto, pulando o Service?", ["Em geral não: as regras de negócio ficam no Service", "Sim, sempre", "Só em testes", "Só com JPA"], 0, "Pular o Service espalha regras pelo Controller. Cada camada deve falar só com a de baixo.", "", "Camadas em ordem."),
+  N("Arquitetura", "arq", "Qual é a vantagem de separar em camadas?", ["Cada parte tem uma função clara, fica fácil de testar e de mudar", "O código fica mais curto", "A aplicação roda mais rápido", "Não precisa de testes"], 0, "Separar responsabilidades reduz o impacto de mudanças e facilita achar onde está um erro.", "", "Organização."),
+  N("Arquitetura", "arq", "O que significa organizar o projeto por domínio?", ["Agrupar o que pertence ao mesmo assunto (pedido, cliente) na mesma pasta", "Agrupar por tipo de arquivo apenas", "Usar só um pacote", "Ordenar em ordem alfabética"], 0, "Em vez de ter pastas só por tipo, cada assunto do negócio reúne seu controller, service e repository.", "", "Por assunto."),
+  N("Arquitetura", "arq", "Em MVC, o que é o Model?", ["Os dados e as regras do negócio", "A tela", "O servidor web", "O banco de dados apenas"], 0, "Model é o assunto do sistema: dados e regras. View é a apresentação, e Controller liga os dois.", "", "Dados."),
+
+  /* Spring Boot e JPA: LAZY e EAGER */
+  N("JPA: LAZY e EAGER", "lazy", "Você lista 100 clientes e, em um laço, acessa os endereços (LAZY) de cada um. Quantos SELECTs o Hibernate faz?", ["1", "2", "101", "100 apenas para os endereços e nenhum para os clientes"], 2, "1 consulta traz a lista de clientes e mais 100 buscam os endereços, um por cliente. É o problema N+1.", "É ir ao mercado uma vez por item da lista em vez de uma única vez.", "Conte a lista mais um por cliente."),
+  N("JPA: LAZY e EAGER", "lazy", "Como resolver o N+1 buscando o cliente e os endereços de uma vez?", ["JOIN FETCH na consulta", "Trocar tudo por EAGER", "Fazer mais um laço", "Apagar os endereços"], 0, "JOIN FETCH traz o relacionamento junto em um único SELECT, sem forçar o EAGER em todo lugar.", "", "Buscar junto, só quando precisar."),
+  N("JPA: LAZY e EAGER", "lazy", "Qual é o fetch padrão do @OneToMany?", ["LAZY", "EAGER", "Não tem padrão", "Depende do banco"], 0, "Coleções (@OneToMany e @ManyToMany) são LAZY por padrão. @ManyToOne e @OneToOne são EAGER por padrão.", "", "Listas são preguiçosas."),
+  N("JPA: LAZY e EAGER", "lazy", "Quando ocorre a LazyInitializationException?", ["Ao acessar um relacionamento LAZY depois que a sessão/transação foi fechada", "Ao salvar um objeto", "Ao iniciar o Spring", "Ao usar EAGER"], 0, "O Hibernate só consegue buscar o dado enquanto a sessão está aberta. Fora dela, falta como ir ao banco.", "", "A conexão já fechou."),
+  N("JPA: LAZY e EAGER", "lazy", "Qual é o risco de usar EAGER em tudo?", ["Trazer dados desnecessários e fazer consultas pesadas sempre", "Dar erro de compilação", "Perder dados", "Nenhum"], 0, "Cada busca traz todos os relacionamentos, mesmo quando você não vai usá-los, o que gasta memória e tempo.", "", "Pagar o que não usa."),
+  N("JPA: LAZY e EAGER", "lazy", "Para que serve @Transactional em um método do Service?", ["Manter a transação (e a sessão) aberta durante o método", "Tornar o método mais rápido", "Criar um endpoint", "Criptografar os dados"], 0, "Dentro da transação, o LAZY funciona e várias alterações valem juntas, ou todas ou nenhuma.", "", "Janela de acesso."),
+  N("JPA: LAZY e EAGER", "lazy", "O que é uma entidade JPA?", ["Uma classe mapeada para uma tabela do banco (@Entity)", "Uma interface do Spring", "Um tipo de DTO", "Uma exceção"], 0, "Cada instância da entidade representa uma linha da tabela.", "", "Classe-tabela."),
+
+  /* Pedidos e entregas */
+  N("Pedidos e entregas", "ped", "Qual é a melhor forma de representar os status de um pedido no código?", ["Um enum", "Strings soltas", "Números sem nome", "Um boolean"], 0, "O enum limita os valores a uma lista fechada, e o compilador evita erros de digitação.", "", "Lista fechada."),
+  N("Pedidos e entregas", "ped", "O pedido está ENTREGUE. Ele pode voltar para EM_PREPARO?", ["Não, o estado final não retrocede", "Sim, sempre", "Só às sextas", "Só se o cliente pedir"], 0, "As transições são limitadas: a máquina de estados define quais mudanças são válidas.", "", "Sentido único."),
+  N("Pedidos e entregas", "ped", "O que o sistema deve fazer quando alguém tenta uma transição inválida de status?", ["Recusar com um erro claro e não alterar o pedido", "Alterar mesmo assim", "Apagar o pedido", "Ignorar sem aviso"], 0, "Proteger as regras é obrigação do sistema, e a API pode devolver um 409 ou 422.", "", "Proteja o estado."),
+  N("Pedidos e entregas", "ped", "Uma entrega agendada para ontem deve ser aceita?", ["Não: a data precisa estar no futuro", "Sim", "Só se for sábado", "Só com desconto"], 0, "A regra exige data futura, e normalmente uma antecedência mínima para organizar a entrega.", "", "Futuro."),
+  N("Pedidos e entregas", "ped", "Por que guardar o histórico de mudanças de status do pedido?", ["Para saber quando e por que cada mudança aconteceu", "Para gastar espaço", "Porque o banco obriga", "Não precisa"], 0, "O histórico ajuda no suporte, na auditoria e na análise de problemas.", "", "Rastreabilidade."),
+  N("Pedidos e entregas", "ped", "O total do pedido deve ser calculado com BigDecimal ou double?", ["BigDecimal, para evitar erros de arredondamento", "double, é mais simples", "float, para economizar", "int sempre"], 0, "Dinheiro exige exatidão. 0.1 + 0.2 em double dá 0.30000000000000004.", "", "Dinheiro."),
+
+  /* Testes */
+  N("Testes", "test", "O que o assertEquals(5, resultado) faz?", ["Falha o teste se o resultado for diferente de 5", "Atribui 5 ao resultado", "Imprime 5", "Ignora o resultado"], 0, "As asserções comparam o esperado com o obtido, e se forem diferentes o teste fica vermelho.", "", "Esperado x obtido."),
+  N("Testes", "test", "Como testar que um método lança uma exceção?", ["assertThrows", "assertEquals", "if e else", "Não dá para testar"], 0, "assertThrows(Excecao.class, () -> metodo()) passa se a exceção esperada for lançada.", "", "Esperar o erro."),
+  N("Testes", "test", "Por que um teste não deve depender de outro?", ["Cada teste deve rodar sozinho e em qualquer ordem", "Por estilo", "Porque o Java não permite", "Para economizar memória"], 0, "Se um teste depende do estado deixado por outro, falhas viram um quebra-cabeça difícil.", "", "Independência."),
+  N("Testes", "test", "O que um teste de integração costuma cobrir?", ["Várias camadas funcionando juntas, como controller, service e banco", "Uma única linha de código", "Só o front-end", "Só a sintaxe"], 0, "Ele confirma que as peças se encaixam, ao custo de ser mais lento que o unitário.", "", "Peças juntas."),
+  N("Testes", "test", "Por que o ViaCEP é substituído por um mock nos testes?", ["Para não depender da internet nem de um serviço externo", "Porque o ViaCEP é pago", "Para ficar mais lento", "Para trocar o banco"], 0, "Testes devem ser rápidos, estáveis e repetíveis, sem falhar por causa de rede.", "", "Sem rede."),
+  N("Testes", "test", "Qual é a ordem do padrão AAA?", ["Arrange (preparar), Act (executar), Assert (conferir)", "Assert, Act, Arrange", "Act, Arrange, Assert", "Apagar, Alterar, Atualizar"], 0, "Prepara os dados, executa a ação e confere o resultado.", "", "Preparar, agir, conferir."),
+  N("Testes", "test", "Por que rodar os testes a cada mudança é útil?", ["Porque acusa cedo se algo antigo quebrou", "Porque deixa o código mais curto", "Porque dispensa o Git", "Não é útil"], 0, "Quanto antes o erro aparece, mais fácil é achar a causa e mais barato é corrigir.", "", "Erro cedo."),
+
+  /* Streams e Optional */
+  N("Streams e Optional", "streams", "O que faz o filter em um stream?", ["Mantém só os itens que atendem à condição", "Transforma cada item", "Soma os itens", "Ordena os itens"], 0, "filter recebe uma condição e deixa passar só os itens que a satisfazem.", "", "Peneira."),
+  N("Streams e Optional", "streams", "O que faz o map em um stream?", ["Transforma cada item em outro valor", "Remove itens", "Cria um Map", "Conta os itens"], 0, "map aplica uma função a cada item, como transformar Cliente em String com getNome. Não confunda com a estrutura Map.", "", "Transformar."),
+  N("Streams e Optional", "streams", "Qual destas é uma operação terminal?", ["filter", "map", "toList", "sorted"], 2, "toList (assim como count, sum e findFirst) dispara o processamento e produz um resultado. filter, map e sorted são intermediárias.", "", "Dispara tudo."),
+  N("Streams e Optional", "streams", "O que acontece com a lista original ao usar stream().filter(...).toList()?", ["Nada, ela continua igual", "É alterada", "É apagada", "Vira um Set"], 0, "Streams não alteram a fonte: geram um novo resultado.", "", "Cópia, não edição."),
+  N("Streams e Optional", "streams", "Qual é a vantagem do Optional?", ["Dizer no próprio tipo que o valor pode não existir, evitando NullPointerException", "Deixar o código mais lento", "Guardar números grandes", "Substituir listas"], 0, "O Optional obriga quem usa a pensar no caso do valor ausente.", "", "Pode não existir."),
+  N("Streams e Optional", "streams", "Qual é a forma mais segura de pegar o valor de um Optional?", ["orElse ou orElseThrow", "get() sem verificar", "Converter para texto", "Ignorar"], 0, "get() lança exceção se estiver vazio. orElse dá um valor padrão, e orElseThrow lança uma exceção que você escolhe.", "", "Trate o vazio."),
+
+  /* SQL avançado */
+  N("SQL avançado", "sqlavanc", "Qual é a diferença entre INNER JOIN e LEFT JOIN?", ["LEFT JOIN mantém também as linhas da esquerda sem correspondência", "INNER JOIN mantém todas as linhas", "São iguais", "LEFT JOIN só aceita números"], 0, "INNER devolve apenas quem tem par nas duas tabelas. LEFT traz todos da tabela da esquerda, com NULL onde não há par.", "", "Quem não tem par."),
+  N("SQL avançado", "sqlavanc", "Qual é a diferença entre WHERE e HAVING?", ["WHERE filtra linhas antes de agrupar e HAVING filtra os grupos depois", "São iguais", "HAVING filtra antes do GROUP BY", "WHERE só funciona com JOIN"], 0, "Para filtrar o resultado de uma agregação, como COUNT maior que 2, usa-se HAVING.", "", "Antes x depois do agrupamento."),
+  N("SQL avançado", "sqlavanc", "Como verificar se uma coluna é nula?", ["coluna IS NULL", "coluna = NULL", "coluna == NULL", "coluna EQUALS NULL"], 0, "NULL significa 'desconhecido', e qualquer comparação com = NULL não é verdadeira. Use IS NULL.", "", "Nulo não é igual a nada."),
+  N("SQL avançado", "sqlavanc", "Qual função agregada conta linhas?", ["COUNT", "SUM", "AVG", "MAX"], 0, "COUNT conta, SUM soma, AVG calcula a média e MAX pega o maior valor.", "", "Contar."),
+  N("SQL avançado", "sqlavanc", "Como representar uma relação muitos-para-muitos, como aluno e curso?", ["Com uma tabela associativa com as duas chaves estrangeiras", "Com uma coluna de texto", "Duplicando as linhas", "Não dá para representar"], 0, "A tabela do meio (matrícula) liga cada aluno aos seus cursos e cada curso aos seus alunos.", "", "Tabela no meio."),
+  N("SQL avançado", "sqlavanc", "O que faz o GROUP BY cliente_id com COUNT(*)?", ["Conta quantas linhas existem para cada cliente", "Apaga os clientes", "Ordena os clientes", "Soma os ids"], 0, "Agrupa as linhas com o mesmo cliente_id e aplica o COUNT em cada grupo.", "", "Um resultado por grupo."),
+
+  /* Relacionamentos JPA */
+  N("Relacionamentos JPA", "jparel", "O que faz mappedBy em um @OneToMany?", ["Indica o atributo do outro lado que é dono da relação (tem a chave estrangeira)", "Cria uma nova tabela", "Apaga em cascata", "Torna a lista EAGER"], 0, "mappedBy marca o lado inverso: a coluna da FK é controlada pelo @ManyToOne do outro lado.", "", "Quem tem a FK."),
+  N("Relacionamentos JPA", "jparel", "Em Cliente e Endereço, de qual lado fica a chave estrangeira?", ["Em Endereço (cliente_id)", "Em Cliente", "Nos dois", "Em nenhum"], 0, "O lado 'muitos' (Endereço) guarda o id do 'um' (Cliente), e é onde fica o @ManyToOne.", "", "O lado muitos."),
+  N("Relacionamentos JPA", "jparel", "O que faz cascade = ALL no cliente?", ["Propaga as operações (salvar, remover) para os endereços", "Torna tudo EAGER", "Cria índices", "Nada"], 0, "Salvar ou remover o cliente também salva ou remove os endereços ligados a ele.", "", "Efeito cascata."),
+  N("Relacionamentos JPA", "jparel", "O que faz orphanRemoval = true?", ["Apaga do banco o endereço removido da lista do cliente", "Apaga o cliente", "Cria endereços novos", "Impede remoções"], 0, "Um endereço que sai da lista fica órfão, e o orphanRemoval apaga a linha dele.", "", "Órfão = sem dono."),
+  N("Relacionamentos JPA", "jparel", "Qual anotação liga muitos endereços a um cliente, no lado do endereço?", ["@ManyToOne", "@OneToMany", "@OneToOne", "@Entity"], 0, "Muitos endereços para um cliente: @ManyToOne no lado do endereço, com @JoinColumn indicando a coluna FK.", "", "Muitos para um."),
+  N("Relacionamentos JPA", "jparel", "Para que serve @JoinColumn?", ["Indicar o nome da coluna da chave estrangeira", "Juntar duas consultas", "Criar índice", "Definir o tipo do id"], 0, "@JoinColumn(name = \"cliente_id\") diz qual coluna guarda a ligação com a outra tabela.", "", "A coluna da FK.")
+);
+
+/* ---------- reforço: extras, por baixo dos panos, profissional ---------- */
+PERGUNTAS.push(
+  /* Extra: tecnologias do app */
+  N("Tecnologias do app", "techapp", "Qual tecnologia define a estrutura de uma página web, como títulos e botões?", ["HTML", "CSS", "JavaScript", "Git"], 0, "HTML é a estrutura, CSS é a aparência e JavaScript é o comportamento.", "", "Esqueleto."),
+  N("Tecnologias do app", "techapp", "Onde o app de estudos guarda o seu progresso?", ["No localStorage do navegador", "Em um servidor na nuvem", "No GitHub", "No banco H2"], 0, "O progresso fica só no navegador deste aparelho. Limpar os dados do site apaga tudo.", "", "Fica no aparelho."),
+  N("Tecnologias do app", "techapp", "Para que serve um service worker em um PWA?", ["Guardar cópias dos arquivos para o app abrir mesmo offline", "Acelerar o banco de dados", "Compilar o Java", "Criar commits"], 0, "É um script em segundo plano que intercepta requisições e responde com uma cópia guardada quando a rede falha.", "", "Offline."),
+  N("Tecnologias do app", "techapp", "O que significa a estratégia network-first?", ["Tenta a internet primeiro e usa a cópia só se estiver offline", "Usa sempre a cópia", "Nunca usa a internet", "Baixa tudo toda vez"], 0, "Assim você sempre vê a versão mais nova quando há conexão, e ainda funciona sem rede.", "", "Rede antes do cache."),
+  N("Tecnologias do app", "techapp", "Para que serve o arquivo manifest.webmanifest?", ["Dar nome, ícone e cores para instalar o site como app", "Guardar as perguntas", "Compilar o JavaScript", "Registrar commits"], 0, "O manifest descreve o app para o navegador poder instalá-lo como PWA.", "", "Cartão de identidade."),
+  N("Tecnologias do app", "techapp", "O que é JSON?", ["Um formato de texto para representar dados", "Uma linguagem de programação", "Um banco de dados", "Um servidor"], 0, "JSON guarda dados em chave e valor e é o formato usado pelas APIs REST, além de ser o que o localStorage recebe como texto.", "", "Dados em texto."),
+
+  /* Extra: tecnologias do backend */
+  N("Tecnologias do backend", "techback", "Quem cria e altera as tabelas na API de clientes?", ["O Flyway, com migrações versionadas", "O Hibernate automaticamente", "O Swagger", "O Maven"], 0, "Com ddl-auto=validate, o Hibernate só confere o schema. As mudanças vão em arquivos V1, V2 etc. do Flyway.", "", "Migrações."),
+  N("Tecnologias do backend", "techback", "Para que serve o Maven?", ["Baixar as dependências do pom.xml e compilar o projeto", "Guardar os dados", "Rodar o banco", "Criar o front-end"], 0, "Ele gerencia bibliotecas e o ciclo de build (compilar, testar, empacotar).", "", "Gerente de build."),
+  N("Tecnologias do backend", "techback", "O que é o H2 usado na API?", ["Um banco em memória, bom para estudo e testes", "Um framework web", "Um servidor de e-mails", "Uma ferramenta de deploy"], 0, "Os dados somem quando a aplicação reinicia. Para produção, usa-se um banco como o PostgreSQL.", "", "Banco descartável."),
+  N("Tecnologias do backend", "techback", "Por que a chamada ao ViaCEP tem timeout?", ["Para a API não travar se o serviço externo ficar lento", "Para economizar memória", "Para criptografar", "Porque o ViaCEP exige"], 0, "Sem limite de tempo, uma dependência lenta prenderia suas threads e deixaria sua API lenta também.", "", "Não esperar para sempre."),
+  N("Tecnologias do backend", "techback", "O que é o formato ProblemDetail (RFC 7807)?", ["Um padrão de resposta de erro para APIs HTTP", "Um tipo de banco", "Uma anotação de teste", "Um comando do Git"], 0, "Ele padroniza campos como título, status e detalhe nas respostas de erro.", "", "Erro padronizado."),
+  N("Tecnologias do backend", "techback", "Para que serve o Swagger (springdoc)?", ["Gerar documentação interativa dos endpoints", "Compilar o projeto", "Criar o banco", "Testar a memória"], 0, "Ele lê os controllers e mostra uma página onde você vê e testa cada endpoint.", "", "Documentação viva."),
+
+  /* Da URL à resposta */
+  N("Da URL à resposta", "url", "Qual é a ordem correta do que acontece ao abrir um site?", ["DNS, conexão TCP/TLS, requisição HTTP, resposta", "Resposta, DNS, TCP, requisição", "TLS, resposta, DNS, TCP", "Requisição, DNS, resposta, TCP"], 0, "Primeiro descobre o IP (DNS), depois abre a conexão segura e só então pede a página.", "", "Descobrir, conectar, pedir."),
+  N("Da URL à resposta", "url", "O que significa o status 502 Bad Gateway?", ["Um servidor intermediário recebeu uma resposta inválida do servidor de trás", "A página não existe", "Senha inválida", "Deu tudo certo"], 0, "Costuma indicar que o servidor da aplicação caiu ou respondeu errado atrás de um proxy.", "", "O intermediário falhou."),
+  N("Da URL à resposta", "url", "Qual status indica que o recurso foi criado com sucesso?", ["201 Created", "200 OK", "204 No Content", "301 Moved"], 0, "201 é a resposta a um POST que criou algo, normalmente com o endereço do novo item no header Location.", "", "Criado."),
+  N("Da URL à resposta", "url", "O que o certificado TLS garante no HTTPS?", ["Que a conexão é criptografada e o site é quem diz ser", "Que o site é rápido", "Que não há bugs", "Que o banco é seguro"], 0, "O TLS criptografa o tráfego e valida a identidade do servidor.", "", "Cadeado."),
+  N("Da URL à resposta", "url", "Qual método HTTP é usado normalmente para criar um recurso?", ["POST", "GET", "DELETE", "HEAD"], 0, "GET lê, POST cria, PUT/PATCH altera e DELETE remove.", "", "Criar."),
+  N("Da URL à resposta", "url", "Uma requisição leva 8 segundos. Por onde começar a investigar?", ["Medir cada etapa (DNS, conexão, servidor, banco) para achar a lenta", "Reescrever tudo", "Trocar de navegador", "Reiniciar o computador"], 0, "Conhecer o caminho permite isolar onde o tempo é gasto, em vez de chutar.", "", "Etapa por etapa."),
+
+  /* O que o Spring faz ao iniciar */
+  N("O que o Spring faz ao iniciar", "boot", "O que faz a anotação @Service em uma classe?", ["Registra a classe como um bean gerenciado pelo Spring", "Cria uma tabela", "Define uma rota", "Cria um teste"], 0, "O Spring encontra a classe no escaneamento e passa a criar e gerenciar a instância dela.", "", "Entrega ao Spring."),
+  N("O que o Spring faz ao iniciar", "boot", "O que a anotação @SpringBootApplication representa?", ["O ponto de partida: ativa autoconfiguração e escaneia o pacote", "Um endpoint", "Um tipo de teste", "Uma tabela"], 0, "Ela junta configuração, escaneamento de componentes e autoconfiguração.", "", "Ponto de partida."),
+  N("O que o Spring faz ao iniciar", "boot", "Para que serve o application.properties?", ["Configurar a aplicação: porta, banco, URLs e outras opções", "Guardar o código Java", "Definir as rotas", "Compilar o projeto"], 0, "As configurações ficam fora do código e podem mudar por ambiente.", "", "Configurações."),
+  N("O que o Spring faz ao iniciar", "boot", "Como mudar a porta da aplicação de 8080 para 9090?", ["server.port=9090", "porta=9090", "app.port 9090 no Java", "Não dá"], 0, "A propriedade server.port define a porta do Tomcat embutido.", "", "Propriedade do servidor."),
+  N("O que o Spring faz ao iniciar", "boot", "O que acontece se o Spring não encontra um bean que uma classe pede no construtor?", ["A aplicação não sobe e mostra um erro de dependência", "Ele cria um aleatório", "Nada", "O Java ignora"], 0, "O erro costuma citar 'No qualifying bean' e a classe que pediu, e a causa fica no fim do stack trace.", "", "Falta a peça."),
+  N("O que o Spring faz ao iniciar", "boot", "Qual é a vantagem da injeção de dependência?", ["A classe pede o que precisa e fica fácil trocar ou simular a dependência nos testes", "A classe roda mais rápido", "Evita escrever classes", "Elimina o banco"], 0, "Em vez de criar com new, a classe recebe a dependência pronta, o que reduz o acoplamento.", "", "Receber em vez de criar."),
+
+  /* Memória, threads e conexões */
+  N("Memória, threads e conexões", "mem", "Onde ficam as variáveis locais e as chamadas de método?", ["Na stack (pilha)", "No heap", "No disco", "No banco"], 0, "A stack guarda quadros de chamadas e variáveis locais, e é rápida e pequena. Os objetos ficam no heap.", "", "Pequena e rápida."),
+  N("Memória, threads e conexões", "mem", "O que causa um OutOfMemoryError?", ["O heap ficou cheio de objetos que ainda estão em uso", "Uma divisão por zero", "Um erro de digitação", "Uma consulta SQL"], 0, "Se os objetos continuam referenciados, o Garbage Collector não consegue liberar espaço.", "", "Falta espaço."),
+  N("Memória, threads e conexões", "mem", "O que é uma thread?", ["Um fluxo de execução; várias permitem atender várias tarefas ao mesmo tempo", "Uma variável", "Uma classe abstrata", "Um tipo de banco"], 0, "Em um servidor web, cada requisição costuma ser atendida por uma thread do pool.", "", "Uma linha de execução."),
+  N("Memória, threads e conexões", "mem", "Por que existe um pool de conexões com o banco?", ["Abrir conexão é caro, então elas são reaproveitadas", "Para guardar senhas", "Para criptografar", "Para ordenar consultas"], 0, "O pool mantém conexões abertas e as empresta, o que economiza tempo e protege o banco de excesso.", "", "Reaproveitar."),
+  N("Memória, threads e conexões", "mem", "O que acontece se um atributo compartilhado é alterado por várias threads sem controle?", ["Pode ocorrer race condition: resultado imprevisível", "Nada", "O Java sincroniza sozinho", "O programa fica mais rápido"], 0, "Duas threads podem ler e escrever ao mesmo tempo e se atropelar. Evite estado compartilhado que muda.", "", "Atropelo."),
+  N("Memória, threads e conexões", "mem", "O que o Garbage Collector faz?", ["Libera a memória de objetos que ninguém mais usa", "Apaga arquivos", "Limpa o banco", "Fecha o programa"], 0, "O coletor de lixo remove do heap o que não tem mais referências.", "", "Faxina."),
+
+  /* Banco por dentro */
+  N("Banco por dentro", "bdint", "Em uma transferência bancária, o débito funcionou e o crédito falhou. Qual propriedade ACID evita o dinheiro sumir?", ["Atomicidade: tudo ou nada, com rollback", "Durabilidade", "Isolamento", "Nenhuma"], 0, "A transação desfaz o débito se qualquer passo falhar.", "", "Tudo ou nada."),
+  N("Banco por dentro", "bdint", "O que significa a Durabilidade em ACID?", ["Depois do commit, os dados permanecem mesmo se o sistema cair", "A transação demora", "O banco dura anos", "Os dados são criptografados"], 0, "Confirmou, está gravado de forma permanente.", "", "Sobrevive à queda."),
+  N("Banco por dentro", "bdint", "O que é um deadlock?", ["Duas transações esperando uma pela outra para sempre", "Um erro de SQL", "Um índice quebrado", "Uma consulta lenta"], 0, "Cada uma segura um lock de que a outra precisa. O banco detecta e cancela uma delas.", "É um impasse de portas giratórias: ninguém sai porque o outro não sai.", "Esperam em círculo."),
+  N("Banco por dentro", "bdint", "Quando um índice atrapalha?", ["Em tabelas com muitas gravações, pois cada INSERT e UPDATE também atualiza o índice", "Nunca", "Em toda leitura", "Só em tabelas vazias"], 0, "Índices aceleram buscas, mas custam espaço e tornam as gravações mais lentas.", "", "Tem custo."),
+  N("Banco por dentro", "bdint", "O que o EXPLAIN mostra?", ["Como o banco pretende (ou conseguiu) executar a consulta", "O código Java", "Os logs do servidor", "O histórico do Git"], 0, "Com ele você vê se um índice foi usado ou se a tabela inteira foi lida (Seq Scan).", "", "Plano da consulta."),
+  N("Banco por dentro", "bdint", "Por que manter transações curtas?", ["Para não segurar locks por muito tempo e bloquear outras operações", "Para economizar memória do Java", "Porque o banco exige", "Para o COMMIT ser maior"], 0, "Enquanto a transação está aberta, linhas podem ficar travadas para os outros.", "", "Locks."),
+
+  /* SOLID e padrões */
+  N("SOLID", "solid", "O que diz o princípio Aberto/Fechado (O do SOLID)?", ["Aberto para extensão e fechado para modificação", "Todo código deve ser público", "Classes devem ser abertas ao banco", "Não se deve usar interfaces"], 0, "Dá para acrescentar novos comportamentos (como um novo pagamento) sem mexer no código que já funciona.", "", "Estender sem editar."),
+  N("SOLID", "solid", "O que diz a Inversão de Dependência (D do SOLID)?", ["Dependa de abstrações (interfaces), não de implementações concretas", "Dependa sempre de classes concretas", "Evite o uso de injeção", "Dependa do banco"], 0, "O Service depende da interface do repositório, e o Spring entrega a implementação.", "", "Interfaces."),
+  N("SOLID", "solid", "Qual padrão cria apenas uma instância de uma classe?", ["Singleton", "Strategy", "Builder", "Observer"], 0, "O Singleton garante uma instância única. No Spring, os beans são singletons por padrão.", "", "Uma só."),
+  N("SOLID", "solid", "Para que serve o padrão Builder?", ["Montar objetos com muitos atributos de forma legível, passo a passo", "Conectar ao banco", "Ordenar listas", "Criar threads"], 0, "Em vez de um construtor com 10 parâmetros, você encadeia chamadas nomeadas e termina com build().", "", "Montar passo a passo."),
+  N("SOLID", "solid", "O que o Princípio da Substituição de Liskov (L) exige?", ["Que uma subclasse possa substituir a classe pai sem quebrar o comportamento esperado", "Que toda classe seja final", "Que não haja herança", "Que métodos sejam estáticos"], 0, "Se o código funciona com Animal, deve funcionar com qualquer Cachorro ou Gato sem surpresa.", "", "Substituição segura."),
+  N("SOLID", "solid", "Por que não forçar um padrão de projeto onde um código simples resolve?", ["Porque complexidade desnecessária dificulta a manutenção", "Porque padrões são proibidos", "Porque o Java não aceita", "Porque ficam lentos"], 0, "Padrões resolvem problemas específicos. Usá-los sem necessidade só aumenta o código.", "", "Simples primeiro."),
+  N("SOLID", "solid", "O que o Princípio da Segregação de Interfaces (I) recomenda?", ["Várias interfaces pequenas e específicas em vez de uma grande", "Uma interface com todos os métodos", "Nunca usar interfaces", "Interfaces só com atributos"], 0, "Quem implementa não deve ser obrigado a ter métodos que não usa.", "", "Interfaces enxutas."),
+
+  /* Segurança */
+  N("Segurança", "seg", "O que é um JWT?", ["Um token assinado que identifica o usuário nas requisições", "Um banco de dados", "Uma senha", "Uma linguagem"], 0, "Depois do login, o cliente envia o token em cada pedido, no header Authorization, e o servidor confere a assinatura.", "É uma pulseira de evento: mostrou, entra.", "Prova de identidade."),
+  N("Segurança", "seg", "Qual status HTTP indica 'você está identificado, mas não tem permissão'?", ["403 Forbidden", "401 Unauthorized", "404 Not Found", "500 Internal Server Error"], 0, "401 significa não autenticado. 403 significa autenticado, mas sem autorização para aquilo.", "", "Autorização."),
+  N("Segurança", "seg", "Por que usar HTTPS?", ["Para criptografar o tráfego e evitar que terceiros leiam ou alterem os dados", "Para o site ser mais rápido", "Para evitar erros no código", "Para ocupar menos memória"], 0, "Sem HTTPS, senhas e dados trafegam em texto puro pela rede.", "", "Tráfego protegido."),
+  N("Segurança", "seg", "O que é o princípio do menor privilégio?", ["Dar a cada usuário e serviço só as permissões de que precisa", "Dar acesso total a todos", "Usar a senha mais curta", "Nunca criar usuários"], 0, "Se uma conta for comprometida, o estrago fica limitado ao que ela podia fazer.", "", "Só o necessário."),
+  N("Segurança", "seg", "Por que usar um hash com salt, como o bcrypt, para senhas?", ["Para que o vazamento do banco não revele as senhas e hashes iguais não se repitam", "Para recuperar a senha original", "Para o login ficar mais rápido", "Para criptografar o banco"], 0, "Hash não tem volta, e o salt aleatório torna cada resultado único, o que dificulta ataques.", "", "Sem volta."),
+  N("Segurança", "seg", "O que fazer se você enviou uma senha por engano para o GitHub?", ["Trocar a senha imediatamente e remover o segredo do repositório", "Apagar o commit e continuar usando a mesma", "Ignorar", "Torná-la mais curta"], 0, "O histórico do Git e os robôs de varredura podem ter copiado. A senha precisa ser considerada comprometida.", "", "Considere vazada."),
+
+  /* Desempenho */
+  N("Desempenho", "desemp", "Qual é uma boa prática para listas grandes na API?", ["Paginação, devolvendo poucos itens por vez", "Devolver tudo de uma vez", "Aumentar o timeout", "Usar mais EAGER"], 0, "Páginas pequenas reduzem tempo, memória e tráfego de rede.", "", "Por partes."),
+  N("Desempenho", "desemp", "Para que serve um cache?", ["Guardar o resultado de algo caro para reutilizar em vez de refazer", "Apagar dados antigos", "Criar índices", "Acelerar o Git"], 0, "Se o mesmo dado é pedido várias vezes, guardar a resposta evita consultas repetidas. O cuidado é invalidar quando o dado mudar.", "", "Reaproveitar."),
+  N("Desempenho", "desemp", "O que mais costuma tornar uma consulta lenta em tabela grande?", ["Falta de índice na coluna filtrada", "Nomes longos de coluna", "Usar MAIÚSCULAS", "Ter poucos registros"], 0, "Sem índice, o banco precisa ler a tabela inteira (Seq Scan) para achar as linhas.", "", "Leitura completa."),
+  N("Desempenho", "desemp", "O que o log SQL ajuda a descobrir?", ["Quantos SELECTs cada requisição dispara, como no N+1", "O nome do desenvolvedor", "A versão do Java", "A cor do tema"], 0, "Contar as consultas por requisição revela laços escondidos no ORM.", "", "Conte os SELECTs."),
+  N("Desempenho", "desemp", "Por que não se deve otimizar sem medir?", ["Porque você pode gastar tempo em um ponto que não é o gargalo", "Porque medir é proibido", "Porque otimização estraga o código sempre", "Porque o Java já otimiza tudo"], 0, "O gargalo costuma estar onde não se imagina, e só a medição mostra onde.", "", "Meça primeiro."),
+  N("Desempenho", "desemp", "Qual é o efeito de selecionar só as colunas necessárias em vez de SELECT *?", ["Menos dados trafegados e lidos", "Nenhum", "Mais lento", "Apaga o resto"], 0, "Trazer só o que se usa reduz tráfego, memória e pode permitir o uso de índices.", "", "Peça só o necessário."),
+
+  /* Medir o desempenho */
+  N("Medir o desempenho", "medir", "O que a mediana (p50) = 80 ms e p99 = 2 s indicam?", ["A maioria é rápida, mas 1% das requisições é muito lenta", "Tudo está lento", "Tudo está rápido", "O banco caiu"], 0, "Percentis mostram a cauda: a média esconderia essas poucas respostas muito lentas.", "", "Olhe a cauda."),
+  N("Medir o desempenho", "medir", "Para que serve o Actuator do Spring?", ["Expor métricas e saúde da aplicação", "Criar telas", "Gerar tabelas", "Compilar"], 0, "Endpoints como /actuator/health e /actuator/metrics mostram o estado da aplicação.", "", "Painel de instrumentos."),
+  N("Medir o desempenho", "medir", "Por que repetir a medição depois de uma mudança, com o mesmo método?", ["Para comparar com justiça e saber se melhorou", "Por superstição", "Para consumir CPU", "Não é necessário"], 0, "Sem repetir nas mesmas condições, não dá para saber se a melhoria é real.", "", "Antes e depois."),
+  N("Medir o desempenho", "medir", "O que é uma meta de desempenho bem definida?", ["'95% das requisições abaixo de 300 ms'", "'Quero que fique rápido'", "'O melhor possível'", "'Mais rápido que ontem, mais ou menos'"], 0, "Uma meta mensurável diz o que medir e qual valor é aceitável.", "", "Tem número."),
+
+  /* Infraestrutura */
+  N("Infraestrutura", "infra", "Qual é a diferença entre imagem e container?", ["A imagem é o pacote pronto e o container é a imagem em execução", "São iguais", "O container é o arquivo e a imagem o processo", "Imagem só existe no Windows"], 0, "De uma imagem dá para iniciar vários containers, como várias casas de uma mesma planta.", "É a planta e a casa construída.", "Pacote x em execução."),
+  N("Infraestrutura", "infra", "Para que serve o comando docker run?", ["Iniciar um container a partir de uma imagem", "Criar o Dockerfile", "Apagar o Docker", "Compilar o Java"], 0, "docker run cria e inicia um container, e pode mapear portas e variáveis de ambiente.", "", "Rodar."),
+  N("Infraestrutura", "infra", "Por que usar variáveis de ambiente para a senha do banco?", ["Para não colocar segredos no código e poder mudar por ambiente", "Para o banco ficar mais rápido", "Porque o Docker exige", "Para criptografar o banco"], 0, "A mesma imagem pode rodar em desenvolvimento e produção, mudando só as variáveis.", "", "Segredo fora do código."),
+  N("Infraestrutura", "infra", "O que o CI (integração contínua) faz a cada push?", ["Compila e roda os testes automaticamente", "Apaga o repositório", "Cria o banco", "Escreve o código"], 0, "Se algo quebra, você descobre em minutos, ainda antes do merge.", "", "Verificação automática."),
+  N("Infraestrutura", "infra", "Para que serve o Docker Compose?", ["Subir vários containers juntos, como a API e o banco", "Compilar o código", "Criar commits", "Medir desempenho"], 0, "Um arquivo YAML descreve os serviços, e um comando sobe tudo.", "", "Vários serviços."),
+
+  /* Primeira vaga */
+  N("Primeira vaga dev", "vaga", "O que um bom README de projeto deve ter?", ["O que é, como rodar e quais tecnologias usa", "Só o nome do projeto", "Todo o código copiado", "Apenas imagens"], 0, "Quem abre o repositório decide em segundos, e um README claro mostra organização e comunicação.", "", "Cartão de visita."),
+  N("Primeira vaga dev", "vaga", "O que mostra seriedade em um repositório no GitHub?", ["Commits pequenos com mensagens claras e histórico organizado", "Um único commit gigante", "Nenhum commit", "Mensagens como 'teste'"], 0, "O histórico mostra como você pensa e trabalha.", "", "Histórico limpo."),
+  N("Primeira vaga dev", "vaga", "Como responder 'o que é uma API REST?' em uma entrevista?", ["O que é, para que serve e um exemplo", "Só a sigla", "Dizer que não sabe e calar", "Recitar uma definição decorada sem exemplo"], 0, "Estrutura em três partes mostra que você entendeu de verdade, e não decorou.", "", "Três partes."),
+  N("Primeira vaga dev", "vaga", "Em uma entrevista, o que fazer ao receber um problema de lógica?", ["Pensar em voz alta, esclarecer o enunciado e testar um exemplo", "Ficar em silêncio", "Começar a codar sem ler", "Pedir para pular"], 0, "O entrevistador avalia o raciocínio tanto quanto a resposta final.", "", "Mostre o raciocínio."),
+  N("Primeira vaga dev", "vaga", "Qual projeto de portfólio tende a valer mais para a primeira vaga?", ["Poucos projetos bem acabados, com README e testes", "Dez projetos pela metade", "Só cursos concluídos", "Projetos sem código"], 0, "Qualidade e acabamento mostram profissionalismo.", "", "Menos e melhor.")
+);
+
 /* ---------- navegação ---------- */
 const VIEWS = ["hoje", "trilha", "aula", "quiz", "res", "http", "ia", "notas", "evolucao", "carreira"];
-let atual = "hoje";
+let atual = "hoje"; let notaEd = -1;
 const TABS = ["hoje", "trilha", "ia", "notas", "evolucao", "carreira"];
 let ticks = [];
 function parar() { ticks.forEach(clearInterval); ticks = []; }
@@ -1822,9 +2294,22 @@ function go(v, hash = true) {
   document.querySelector(`#tabs button[data-v="${aba}"]`).setAttribute("aria-current", "page");
   if (hash && location.hash.slice(1) !== v) { try { location.hash = v; } catch (e) {} }
   window.scrollTo(0, 0);
+  pintaRetomar(v);
   refresca(v);
 }
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => go(b.dataset.v));
+function pintaRetomar(v) {
+  const b = $("retomar"), i = PR.ult;
+  if (i < 0 || !ETAPAS[i] || v === "aula" || v === "quiz") { b.hidden = true; return; }
+  b.hidden = false; b.querySelector("span").textContent = `Você parou em: ${ETAPAS[i][0]} (etapa ${i + 1} de ${ETAPAS.length})${PR.lidas[ETAPAS[i][5]] ? " · já estudada" : ""}`;
+}
+$("retomar").onclick = () => abreAula(PR.ult);
+function rolaTrilha(i, marca) {
+  go("trilha");
+  const b = document.querySelector(`.etapa[data-i="${Math.min(i, ETAPAS.length - 1)}"]`); if (!b) return;
+  b.scrollIntoView({ block: "center" });
+  if (marca) { b.classList.add("proxima"); setTimeout(() => b.classList.remove("proxima"), 4000); }
+}
 
 /* ---------- fluxograma animado ---------- */
 function montaFlow(el, key) {
@@ -1884,8 +2369,8 @@ function pintaGloss() {
   [...$("gLista").querySelectorAll(".termo")].forEach((d, i) => { const t = GLOSS.filter(t => !q || (t[0] + " " + t[1]).toLowerCase().includes(q))[i]; d.querySelector("b").textContent = t[0]; d.querySelector("p").textContent = t[1]; });
 }
 $("gBusca").oninput = pintaGloss; pintaGloss();
-function abreAula(i) {
-  aulaAtual = i; const e = ETAPAS[i], a = AULAS[e[5]];
+function abreAula(i, paraFim = false) {
+  aulaAtual = i; PR.ult = i; salvaPR(); const e = ETAPAS[i], a = AULAS[e[5]];
   $("aEtapa").textContent = `${e[6]} · etapa ${i + 1} de ${ETAPAS.length}`; $("aTitulo").textContent = e[0]; $("aResumo").textContent = a.resumo || "";
   $("aPontos").innerHTML = a.pontos.map(p => `<li><span>${p}</span></li>`).join("");
   $("aTextoBox").hidden = !a.texto; $("aTexto").innerHTML = (a.texto || []).map(() => "<p></p>").join("");
@@ -1908,18 +2393,39 @@ function abreAula(i) {
     $("aDesVer").onclick = () => { $("aTextoBox").hidden = !a.texto; $("aCodBox").hidden = !cods.length; $("aAnimBox").hidden = !(a.trace || a.flow); $("aDesVer").hidden = true; };
   }
   go("aula");
+  if (paraFim) $("aLida").scrollIntoView({ block: "center" });
   if (a.trace) montaTrace($("aTrace"), a.trace);
   if (a.flow) montaFlow($("aFlow"), a.flow);
 }
-function pintaLida() { const k = ETAPAS[aulaAtual][5]; $("aLida").textContent = PR.lidas[k] ? "Estudada ✓ (desmarcar)" : "Marcar como estudada"; }
-$("aLida").onclick = () => { const k = ETAPAS[aulaAtual][5]; if (PR.lidas[k]) { delete PR.lidas[k]; } else { PR.lidas[k] = hojeStr(); marcaDia(); toast("Aula marcada como estudada. +20 XP"); } salvaPR(); pintaLida(); };
-$("aulaVoltar").onclick = () => go("trilha");
+const temQuiz = k => PERGUNTAS.some(p => p.aula === k);
+function pintaLida() {
+  const k = ETAPAS[aulaAtual][5], t = PR.tar[k] || {}, qOk = t.q || !temQuiz(k), nOk = !!t.n, fim = !!PR.lidas[k];
+  $("aQuiz").textContent = qOk && temQuiz(k) ? "1. Quiz feito ✓ (refazer)" : "1. Fazer o quiz desta aula";
+  const temNota = notas.some(n => n.e === ETAPAS[aulaAtual][0]);
+  $("aNota").textContent = nOk ? "2. Anotação feita ✓ (editar)" : temNota ? "2. Completar minha anotação" : "2. Anotar com minhas palavras";
+  $("aLida").textContent = fim ? "Estudada ✓ (desmarcar)" : "3. Finalizar e marcar como estudada";
+  $("aLida").disabled = !fim && !(qOk && nOk);
+  $("aDicaPasso").textContent = fim ? "" : !qOk ? "Comece pelo quiz. Depois você anota com suas palavras e finaliza." : !nOk ? (temNota ? "Sua anotação ainda não cobre metade das palavras-chave. Complete para liberar o Finalizar." : "Quiz feito. Agora escreva sua anotação.") : "Tudo pronto. Finalize para voltar à trilha, logo abaixo desta aula.";
+}
+$("aLida").onclick = () => {
+  const k = ETAPAS[aulaAtual][5];
+  if (PR.lidas[k]) { delete PR.lidas[k]; salvaPR(); pintaLida(); return; }
+  PR.lidas[k] = hojeStr(); marcaDia(); salvaPR(); toast("Aula estudada. +20 XP");
+  rolaTrilha(aulaAtual + 1, true);
+};
+$("aulaVoltar").onclick = () => rolaTrilha(aulaAtual, false);
+let ctxQuiz = null;
 $("aQuiz").onclick = () => {
   const k = ETAPAS[aulaAtual][5], ix = PERGUNTAS.map((p, n) => p.aula === k ? n : -1).filter(n => n >= 0);
   if (!ix.length) return toast("Esta aula ainda não tem perguntas.");
-  comecar(ix);
+  comecar(ix.sort(() => Math.random() - .5).slice(0, 10), aulaAtual);
 };
-$("aNota").onclick = () => { go("notas"); $("nTitulo").value = ETAPAS[aulaAtual][0] + ": resumo"; $("nTexto").focus(); };
+$("aNota").onclick = () => {
+  const e = ETAPAS[aulaAtual][0]; go("notas"); $("nTag").value = e;
+  const ex = notas.findIndex(n => n.e === e);
+  if (ex >= 0) editaNota(ex); else { sairEdicao(); $("nTag").value = e; $("nTitulo").value = e + ": resumo"; $("nTexto").focus(); corrigeNota(); }
+};
+$("rAula").onclick = () => abreAula(ctxQuiz, true);
 
 /* ---------- quiz ---------- */
 let modo = "treino", pergs = [], qi = 0, resp = [], respondeu = false, t0 = 0, restante = 25, qt = null;
@@ -1943,9 +2449,13 @@ function sorteia(n) {
   for (const k of livres) if (esc.length < n && !esc.includes(k)) esc.push(k);
   guarda("vistas", vistas.concat(esc.filter(k => !vistas.includes(k)))); return esc;
 }
-function comecar(idxs) {
+function comecar(idxs, daAula = null) {
+  ctxQuiz = daAula;
   const base = idxs && idxs.length ? idxs : sorteia(5);
-  pergs = base.map(k => ({ ...PERGUNTAS[k], idx: k })); qi = 0; resp = []; t0 = Date.now(); go("quiz"); mostra();
+  pergs = [...base].sort(() => Math.random() - .5).map(k => {
+    const q = PERGUNTAS[k], ord = q.op.map((_, j) => j).sort(() => Math.random() - .5);
+    return { ...q, op: ord.map(j => q.op[j]), c: ord.indexOf(q.c), idx: k };
+  }); qi = 0; resp = []; t0 = Date.now(); go("quiz"); mostra();
 }
 function mostra() {
   const p = pergs[qi]; respondeu = false; clearInterval(qt);
@@ -1968,7 +2478,7 @@ function responde(k) {
   $("qfb").innerHTML = modo === "treino"
     ? (ok ? `<div class="fb ok"><b>Mandou bem!</b><span>${p.por}</span></div>` : `<div class="fb no"><b>Quase! Vamos entender.</b><span>Certa: ${cert}. ${p.por}</span></div>`)
     : `<div class="fb prova ${ok ? "ok" : "no"}"><b>${k === -1 ? "Tempo esgotado." : ok ? "Correto." : "Incorreto."}</b><span>Resposta: ${cert}. ${p.por}</span></div>`;
-  $("qexp").innerHTML = `<details class="exp" open><summary>${ok ? "Quer entender melhor? Veja de outro jeito" : "Veja de outro jeito"}</summary><div class="ana"><b>Analogia:</b> ${p.ana}</div><div id="qtrace"></div><div id="qflow"></div></details>`;
+  $("qexp").innerHTML = `<details class="exp" open><summary>${ok ? "Quer entender melhor? Veja de outro jeito" : "Veja de outro jeito"}</summary>${p.ana ? `<div class="ana"><b>Analogia:</b> ${p.ana}</div>` : ""}<div id="qtrace"></div><div id="qflow"></div></details>`;
   if (p.trace) montaTrace($("qtrace"), p.trace);
   if (p.flow) montaFlow($("qflow"), p.flow);
   $("qprox").hidden = false; $("qprox").textContent = qi === pergs.length - 1 ? "Ver resultado" : "Próxima"; $("qdica").textContent = "";
@@ -1983,6 +2493,8 @@ function resultado() {
   const por = {}; pergs.forEach((p, k) => { (por[p.tema] ||= [0, 0])[1]++; if (resp[k].ok) por[p.tema][0]++; });
   $("rTemas").innerHTML = Object.entries(por).map(([t, [a, b]]) => `<li class="row"><span>${t}</span><div class="barra"><i style="width:${a / b * 100}%;background:${a === b ? "var(--ok)" : "var(--bad)"}"></i></div><span class="pct">${a}/${b}</span></li>`).join("");
   registra(pergs, resp, seg);
+  if (ctxQuiz !== null) { const k = ETAPAS[ctxQuiz][5]; (PR.tar[k] ||= {}).q = 1; salvaPR(); }
+  $("rAula").hidden = ctxQuiz === null;
   const erros = pergs.map((p, k) => ({ p, r: resp[k] })).filter(x => !x.r.ok);
   $("rRevBox").hidden = !erros.length; $("rTreinar").hidden = !erros.length;
   $("rRev").innerHTML = erros.map(() => `<div><b></b><span></span></div>`).join("");
@@ -2110,12 +2622,99 @@ FLOWS.metodo = { titulo: "Os 6 passos para resolver qualquer desafio", nos: [["1
 /* ---------- notas e foco ---------- */
 $("nTag").innerHTML = ETAPAS.map(e => `<option>${e[0]}</option>`).join("");
 let notas = le("notas", []);
-function pintaNotas() {
-  $("listaNotas").innerHTML = notas.length ? notas.map((n, i) => `<div class="nota-item"><b></b><span class="muted"></span><div><span class="etq"></span><button class="btn sm" data-i="${i}">Remover</button></div></div>`).join("") : `<p class="muted" style="margin:0">Nenhuma anotação ainda. Escreva a primeira com suas palavras.</p>`;
-  [...$("listaNotas").querySelectorAll(".nota-item")].forEach((d, i) => { d.querySelector("b").textContent = notas[i].t; d.querySelector(".muted").textContent = notas[i].x; d.querySelector(".etq").textContent = notas[i].e; d.querySelector("button").onclick = () => { notas.splice(i, 1); guarda("notas", notas); pintaNotas(); }; });
+function sairEdicao() { notaEd = -1; $("formNota").reset(); $("nH").textContent = "Nova anotação"; $("nSalva").textContent = "Salvar anotação"; $("nCancela").hidden = true; corrigeNota(); }
+function editaNota(i) {
+  notaEd = i; const n = notas[i];
+  $("nTitulo").value = n.t; $("nTexto").value = n.x; $("nTag").value = n.e;
+  $("nH").textContent = "Editando anotação"; $("nSalva").textContent = "Salvar alterações"; $("nCancela").hidden = false;
+  $("nTexto").focus(); window.scrollTo(0, 0); corrigeNota();
 }
-$("formNota").onsubmit = e => { e.preventDefault(); notas.unshift({ t: $("nTitulo").value, x: $("nTexto").value, e: $("nTag").value, d: hojeStr() }); guarda("notas", notas); $("formNota").reset(); pintaNotas(); toast("Anotação salva"); };
-pintaNotas();
+$("nCancela").onclick = sairEdicao;
+function pintaNotas() {
+  $("listaNotas").innerHTML = notas.length ? notas.map((n, i) => `<div class="nota-item"><b></b><span class="muted"></span><div><span class="etq"></span><button class="btn sm" data-a="e">Editar</button> <button class="btn sm" data-a="r">Remover</button></div></div>`).join("") : `<p class="muted" style="margin:0">Nenhuma anotação ainda. Escreva a primeira com suas palavras.</p>`;
+  [...$("listaNotas").querySelectorAll(".nota-item")].forEach((d, i) => {
+    d.querySelector("b").textContent = notas[i].t; d.querySelector(".muted").textContent = notas[i].x; d.querySelector(".etq").textContent = notas[i].e;
+    d.querySelector('[data-a="e"]').onclick = () => editaNota(i);
+    d.querySelector('[data-a="r"]').onclick = () => { if (!confirm("Remover esta anotação?")) return; notas.splice(i, 1); if (notaEd === i) sairEdicao(); guarda("notas", notas); pintaNotas(); };
+  });
+}
+$("formNota").onsubmit = e => {
+  e.preventDefault();
+  const dados = { t: $("nTitulo").value, x: $("nTexto").value, e: $("nTag").value };
+  const cb = cobertura(dados.x, dados.e), pos = notaEd >= 0 ? notaEd : 0;
+  if (notaEd >= 0) notas[notaEd] = Object.assign(notas[notaEd], dados, { m: hojeStr(), ok: cb.ok }); else notas.unshift(Object.assign(dados, { d: hojeStr(), ok: cb.ok }));
+  guarda("notas", notas);
+  const ix = ETAPAS.findIndex(x => x[0] === dados.e);
+  if (ix >= 0) { const k = ETAPAS[ix][5]; (PR.tar[k] ||= {}).n = cb.ok ? 1 : 0; salvaPR(); }
+  pintaNotas();
+  if (!cb.ok) { editaNota(pos); toast(`Anotação salva. Faltam ${cb.precisa} palavra(s)-chave para liberar o Finalizar.`); return; }
+  sairEdicao(); toast("Anotação salva. Etapa liberada!");
+  if (ix >= 0) abreAula(ix, true);
+};
+
+/* ---------- correção das anotações (palavras-chave do tema) ---------- */
+const norm = t => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+/* Sinônimos: cada grupo reúne radicais (sem acento) que significam quase o mesmo. */
+const SINON = ["guard armazen grav salv reten mant conserv deposit", "cria declar defin instanci gera constr fabric montar", "valor conteud dado informac", "texto string palavr frase caracter letra", "numero inteiro quantidad", "decimal virgul fracion quebrad", "mud alter troc modific atualiz", "repet laco loop iter percorr cicl voltas", "escolh decid condic verific testa", "erro falh excec problem", "objeto instanc exemplar", "classe molde modelo forma planta", "funcao metodo acao comportament operac", "nome identific rotul etiquet apelid", "tipo categor especi classific natureza", "limit maxim teto capacid", "junt concaten uni combin emend", "resto sobra modul", "apag remov delet exclu elimin", "busc procur ach encontr consult pesquis", "rapid veloz agil eficien ligeir", "lent devagar demor", "seguran proteg resguard blind", "lig conect relacion associ vincul", "envi mand transmit despach", "pedido requisic solicit", "resposta retorn devolv resultad saida", "memoria espaco armazenament", "comparar confront cotej conferi", "repetid duplic igual iguais", "organiz estrutur arranj ordenad", "esconder oculta proteg encapsul privad", "heranc herd estende deriv filha", "contrato regra norma acordo", "caixa caixinha pote recipiente gaveta", "lista colec conjunt grupo vetor array sequenc", "chave identific codigo", "tabela planilha quadro", "linha registr entrada item", "teste verific valid conferenc", "rede internet conex", "servidor maquina computador host", "usuario cliente pessoa utilizador", "senha credencial segredo token", "filtr peneir selecion separ escolh", "transform convert mape adapt"];
+const GRUPOS = SINON.map(g => g.split(" "));
+const STOP = new Set("para como mais pela pelo pelas pelos sobre entre quando onde cada todo toda todos todas outro outra outros outras essa esse isso esta este aqui apenas tambem ainda sempre nunca fica ficam ficar pode podem podemos deve devem muito muitos muita muitas algum alguma alguns algumas qualquer coisa coisas forma jeito vezes depois antes tudo nada seja sejam seus suas deles delas quem qual quais porque pois assim entao".split(" "));
+const radical = w => w.length >= 6 ? w.slice(0, w.length - 2) : w;
+function sentidoHit(low, w) {   // devolve o "conceito" encontrado (palavra ou grupo) ou null
+  const r = radical(w);
+  if (tem(low, w)) return w;
+  const gi = GRUPOS.findIndex(g => g.some(m => r.startsWith(m) || m.startsWith(r)));
+  return gi >= 0 && GRUPOS[gi].some(m => new RegExp("(^|[^a-z0-9])" + m).test(low)) ? "g" + gi : null;
+}
+function cobreSentido(c, low) {
+  if (!c.sig.length) return false;
+  const hits = new Set(c.sig.map(w => sentidoHit(low, w)).filter(Boolean)).size;   // conceitos distintos
+  return hits >= Math.min(2, c.sig.length) && hits >= Math.ceil(c.sig.length * 0.5);
+}
+const MARCA_ANALOGIA = /(e como|eh como|como se|parece|parecid|igual a|igual um|tipo um|tipo uma|semelhante|lembra|imagine|pense em|funciona como|equivale|e o mesmo que|por exemplo)/;
+function chavesDaAula(k) {
+  const a = AULAS[k] || {}, out = [];
+  (a.termos || []).forEach(t => {
+    const nomes = new Set(), def = t[1] || "";
+    t[0].split("/").forEach(x => { x = x.replace(/\(\)/g, "").trim(); if (/[a-zA-ZÀ-ÿ]{2,}/.test(x)) nomes.add(norm(x)); });
+    const al = def.match(/^([^:.]{2,40}):/); if (al) nomes.add(norm(al[1].trim()));
+    const sig = [...new Set(def.replace(/^[^:.]{2,40}:/, "").split(/[^A-Za-zÀ-ÿ0-9]+/).filter(w => !/[a-zà-ÿ][A-Z]/.test(w)).map(norm).filter(w => w.length >= 4 && !STOP.has(w) && !nomes.has(w)))];
+    if (nomes.size) out.push({ nome: t[0], def, alvos: [...nomes], sig });
+  });
+  return out;
+}
+function tem(txt, alvo) {
+  if (/^[a-z]{6,}$/.test(alvo)) alvo = alvo.slice(0, Math.max(5, alvo.length - 3));   // aceita declaro, declarei, variáveis...
+  const a = alvo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(/^[a-z0-9 ]+$/.test(alvo) ? `(^|[^a-z0-9])${a}` : a).test(txt);
+}
+const MIN_COB = 0.5;
+function cobertura(texto, tituloEtapa) {
+  const e = ETAPAS.find(x => x[0] === tituloEtapa); if (!e) return { total: 0, usadas: [], faltam: [], pct: 1, ok: !!texto.trim() };
+  const ch = chavesDaAula(e[5]), low = norm(texto);
+  const exatas = ch.filter(c => c.alvos.some(al => tem(low, al))), sentido = ch.filter(c => !exatas.includes(c) && cobreSentido(c, low));
+  const usadas = ch.filter(c => exatas.includes(c) || sentido.includes(c)), faltam = ch.filter(c => !usadas.includes(c));
+  const pct = ch.length ? usadas.length / ch.length : 1;
+  return { ch, total: ch.length, usadas, sentido, analogia: MARCA_ANALOGIA.test(low), faltam, pct, ok: !!texto.trim() && pct >= MIN_COB, precisa: Math.max(0, Math.ceil(ch.length * MIN_COB) - usadas.length) };
+}
+function corrigeNota() {
+  const box = $("nCorrecao"), texto = $("nTexto").value.trim(), e = ETAPAS.find(x => x[0] === $("nTag").value);
+  if (!e) { box.hidden = true; return; }
+  box.hidden = false;
+  const a = AULAS[e[5]] || {}, ch = chavesDaAula(e[5]), pontos = a.pontos || [];
+  const pontosHtml = pontos.length ? `<details class="exp"><summary>Compare com os pontos-chave da aula</summary><ul>${pontos.map(() => "<li></li>").join("")}</ul></details>` : "";
+  if (!texto) { box.innerHTML = `<h3>Correção automática</h3><p class="muted">Escreva sua explicação e eu confiro se você usou as palavras-chave de <b></b>.</p>${pontosHtml}`; box.querySelector("b").textContent = e[0]; fillPontos(box, pontos); return; }
+  const n = texto.split(/\s+/).length, cb = cobertura(texto, e[0]), usadas = cb.usadas, faltam = cb.faltam, pct = cb.pct;
+  const libera = cb.ok ? `<p class="libera sim">✓ Já dá para avançar: você cobriu pelo menos metade das palavras-chave.</p>` : `<p class="libera nao">Faltam pelo menos <b>${cb.precisa}</b> palavra(s)-chave para liberar o Finalizar (mínimo: metade). Você pode salvar mesmo assim.</p>`;
+  const msgTam = n < 25 ? "Está curta. Tente explicar com mais detalhe, como se contasse para um amigo." : n > 220 ? "Está longa. Vale resumir o essencial." : "";
+  const veredito = !ch.length ? "Este tema não tem palavras-chave cadastradas. Compare com os pontos-chave abaixo." : pct >= .6 ? "Ótimo, você usou boa parte das palavras-chave." : pct >= .3 ? "Bom começo, mas faltam conceitos importantes." : "Faltam quase todas as palavras-chave. Releia a aula e tente de novo.";
+  box.innerHTML = `<h3>Correção automática</h3><p class="v"></p>${libera}${ch.length ? `<p><b>${usadas.length} de ${ch.length}</b> palavras-chave do tema:</p>${cb.sentido.length ? `<p class="muted" style="font-size:13px;margin:0">✓ = palavra exata. ≈ = aceita pelo sentido (sinônimo ou jeito seu de explicar).</p>` : ""}<div class="chips">${ch.map(c => `<span class="${usadas.includes(c) ? "sim" : "nao"}">${usadas.includes(c) ? (cb.sentido.includes(c) ? "≈ " : "✓ ") : ""}${c.nome.replace(/</g, "&lt;")}</span>`).join("")}</div>` : ""}${faltam.length ? `<p><b>Faltou explicar:</b></p><ul class="falta">${faltam.slice(0, 5).map(() => "<li></li>").join("")}</ul>` : ""}${cb.analogia ? `<p class="libera sim" style="font-weight:500">✓ Você usou uma analogia ou exemplo. Isso ajuda muito a memorizar.</p>` : ""}<p class="muted tam"></p><p class="muted" style="font-size:13px">A correção confere palavras-chave, não garante que o conteúdo esteja certo. Compare com os pontos-chave.</p>${pontosHtml}`;
+  box.querySelector(".v").textContent = veredito; box.querySelector(".tam").textContent = msgTam;
+  [...box.querySelectorAll(".falta li")].forEach((li, i) => { li.innerHTML = "<b></b>: <span></span>"; li.querySelector("b").textContent = faltam[i].nome; li.querySelector("span").textContent = faltam[i].def; });
+  fillPontos(box, pontos);
+}
+function fillPontos(box, pontos) { [...box.querySelectorAll("details li")].forEach((li, i) => li.textContent = pontos[i]); }
+$("nTexto").addEventListener("input", corrigeNota); $("nTag").addEventListener("change", corrigeNota);
+pintaNotas(); corrigeNota();
 let seg = 1500, ft = null;
 const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 $("fIni").onclick = () => { if (ft) { clearInterval(ft); ft = null; $("fIni").textContent = "Continuar"; return; } $("fIni").textContent = "Pausar"; ft = setInterval(() => { seg--; $("foco").textContent = fmt(seg); if (seg <= 0) { clearInterval(ft); ft = null; $("fIni").textContent = "Iniciar"; toast("Pausa de 5 minutos. Bom trabalho!"); seg = 1500; PR.min[hojeStr()] = (PR.min[hojeStr()] || 0) + 25; marcaDia(); salvaPR(); } }, 1000); };
@@ -2189,7 +2788,7 @@ function mostraBoas() { pintaNums(); $("boas").hidden = !!PERFIL; document.body.
 function comecaZerado() { PERFIL = { nome: $("boasNome").value.trim().slice(0, 30), desde: hojeStr() }; guarda("perfil", PERFIL); mostraBoas(); go("hoje"); pintaHoje(); window.scrollTo(0, 0); }
 $("boasIr").onclick = comecaZerado;
 $("boasNome").onkeydown = e => { if (e.key === "Enter") comecaZerado(); };
-function refresca(v) { if (v === "hoje") pintaHoje(); else if (v === "trilha") pintaTrilha(); else if (v === "evolucao") pintaEv(); else if (v === "notas") pintaRev(); }
+function refresca(v) { if (v === "hoje") pintaHoje(); else if (v === "trilha") pintaTrilha(); else if (v === "evolucao") pintaEv(); else if (v === "notas") { pintaRev(); if (notaEd < 0 && !$("nTexto").value && PR.ult >= 0) $("nTag").value = ETAPAS[PR.ult][0]; corrigeNota(); } }
 
 
 /* ---------- carreira e ia ---------- */

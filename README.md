@@ -51,7 +51,7 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 
 ## O aplicativo foi construído com tecnologias de desenvolvimento web:
 
-| --- | --- |
+
 | HTML | Estrutura das páginas |
 | CSS | Aparência, cores e adaptação para celular e computador |
 | JavaScript (puro) | funcionamento das aulas, quizzes, anotações e revisão |

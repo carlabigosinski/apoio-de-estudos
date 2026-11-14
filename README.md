@@ -1,5 +1,9 @@
 # Apoio de Estudos
 
+## Acesse o app
+
+👉 **https://carlabigosinski.github.io/apoio-de-estudos/**
+
 ## Sobre o projeto
 
 O Apoio de Estudos Java é um aplicativo de estudos desenvolvido para organizar e facilitar o aprendizado de programação. A proposta é reunir em um só lugar conteúdos, exercícios e ferramentas que ajudam a entender, praticar e acompanhar cada etapa dos estudos.

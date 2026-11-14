@@ -2,17 +2,17 @@
 
 ## Sobre o projeto
 
-O Apoio de Estudos Java é um aplicativo de estudos desenvolvido para organizar e facilitar o aprendizado de programação. A proposta é reunir em um só lugar conteúdos, exercicios e ferramentas que ajudam a entender, praticar e acompanhar cada etapa dos estudos.
+O Apoio de Estudos Java é um aplicativo de estudos desenvolvido para organizar e facilitar o aprendizado de programação. A proposta é reunir em um só lugar conteúdos, exercícios e ferramentas que ajudam a entender, praticar e acompanhar cada etapa dos estudos.
 
-## Por que criei este projeto? 
+## Por que criei este projeto?
 
 Criei este aplicativo para me ajudar a estudar Java de uma forma mais organizada, já que muitas ferramentas de estudo oferecem recursos pagos.
 
-Decidi usar a inteligência artificial para transformar minha ideia em algo real. Todo o desenvolvimento foi feito com o auxilio do Claude, a partir das minhas ideis e orientações sobre como o aplicativo deveria funcionar.
+Decidi usar a inteligência artificial para transformar minha ideia em algo real. Todo o desenvolvimento foi feito com o auxílio do Claude, a partir das minhas ideias e orientações sobre como o aplicativo deveria funcionar.
 
 Além de criar uma ferramenta para meus estudos, essa experiência me permitiu aprender a comunicar ideias, dar instruções, tomar decisões e conduzir o desenvolvimento com o apoio da IA.
 
-No final, aprendi não só sobre programação, mas também sobre como transformar uma ideia em um projeto.
+No final, aprendi não só sobre programação, mas também sobre como transformar uma ideia em um projeto e conduzir um desenvolvimento com IA.
 
 
 ## O que você vai encontrar para estudar?
@@ -22,19 +22,19 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 - Quizzes: mais de 460 perguntas para testar o que você aprendeu.
 - Anotações: espaço para escrever o que entendeu com suas próprias palavras.
 - Desafios e projetos: exercícios para praticar lógica e desenvolver o raciocínio.
-- Acompanhamento: o aplicativo salva seu progresso e mostra onde você parou. 
+- Acompanhamento: o aplicativo salva seu progresso e mostra onde você parou.
 
 
 ## Temas abordados
 
 **Iniciante**
 - Fundamentos de Java e lógica de programação.
-- Variáveis, tipos de dados, condições, repetições, loops e arrays. 
+- Variáveis, tipos de dados, condições, repetições, loops e arrays.
 - Programação orientada a objetos: classes, objetos, encapsulamento, herança, polimorfismo.
 - Conhecendo a JVM e o IntelliJ IDEA.
 
 **Intermediário**
-- Estruturas de dados e desafios de lógica. 
+- Estruturas de dados e desafios de lógica.
 - Projetos práticos com Java.
 - APIs, REST, JSON e DTO, banco de dados, Git e GitHub, arquitetura em camadas (MVC).
 - Spring Boot, JPA e organização de projetos.
@@ -47,16 +47,17 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 - Docker e CI/CD.
 
 **Carreira**
-- Preparação para as oportunidades como desenvolvedor, e como utilizar a Inteligência artificial como apoio nos estudos e no desenvolvimento.
+- Preparação para oportunidades como desenvolvedora e uso da inteligência artificial como apoio nos estudos e no desenvolvimento.
 
-## O aplicativo foi construído com tecnologias de desenvolvimento web:
+## Tecnologias utilizadas
 
-
+| Tecnologia | Para que serve |
+|---|---|
 | HTML | Estrutura das páginas |
 | CSS | Aparência, cores e adaptação para celular e computador |
-| JavaScript (puro) | funcionamento das aulas, quizzes, anotações e revisão |
-| localStorage | armazenamento do progresso e das anotações no próprio navegador |
-| PWA | permite instalar utilizar alguns recursos mesmo sem internet |
-| Git e GitHub | controle das alterações e publicação do projeto |
+| JavaScript (puro) | Funcionamento das aulas, quizzes, anotações e revisão |
+| localStorage | Armazenamento do progresso e das anotações no próprio navegador |
+| PWA | Permite instalar o app e usar alguns recursos mesmo sem internet |
+| Git e GitHub | Controle das alterações e publicação do projeto |
 
-> O conteúdo foi criado com apoio de Inteligência artificial, e revisado durante a construção do projeto. Mesmo assim, algumas informações podem precisar de ajustes.
+> O conteúdo foi criado com apoio de inteligência artificial e ainda está em revisão. Pode haver imprecisões.

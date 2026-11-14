@@ -1,45 +1,62 @@
 # Apoio de Estudos
 
-## O que é
+## Sobre o projeto
 
-Um app de estudos de programação que roda direto no navegador, sem cadastro e sem servidor. Ele organiza o conteúdo em uma **trilha de 48 aulas em ordem**, com explicações em linguagem simples, exemplos de código, animações passo a passo, **mais de 460 perguntas de quiz**, desafios de lógica, projetos e anotações.
+O Apoio de Estudos Java é um aplicativo de estudos desenvolvido para organizar e facilitar o aprendizado de programação. A proposta é reunir em um só lugar conteúdos, exercicios e ferramentas que ajudam a entender, praticar e acompanhar cada etapa dos estudos.
 
-## Para que serve
+## Por que criei este projeto? 
 
-Para quem está **começando em programação e quer chegar ao backend com Java e Spring**. A ideia é estudar um passo de cada vez e fixar o que aprendeu:
+Criei este aplicativo para me ajudar a estudar Java de uma forma mais organizada, já que muitas ferramentas de estudo oferecem recursos pagos.
 
-- cada aula tem um quiz e uma anotação com suas próprias palavras, e só depois você a marca como estudada;
-- as perguntas que você erra voltam para revisão depois de 1, 3, 7 e 14 dias;
-- o app mostra onde você parou e leva você de volta à trilha, na aula seguinte.
+Decidi usar a inteligência artificial para transformar minha ideia em algo real. Todo o desenvolvimento foi feito com o auxilio do Claude, a partir das minhas ideis e orientações sobre como o aplicativo deveria funcionar.
 
-## Temas em destaque
+Além de criar uma ferramenta para meus estudos, essa experiência me permitiu aprender a comunicar ideias, dar instruções, tomar decisões e conduzir o desenvolvimento com o apoio da IA.
+
+No final, aprendi não só sobre programação, mas também sobre como transformar uma ideia em um projeto.
+
+
+## O que você vai encontrar nos estudos?
+
+- Trilha de estudos: 48 aulas organizadas em uma sequência, do básico ao avançado.
+- Explicações e exemplos: conteúdos em linguagem simples, com exemplos de código para facilitar o entendimento.
+- Quizzes: mais de 460 perguntas para testar o que você aprendeu.
+- Anotações: espaço para escrever o que entendeu com suas próprias palavras.
+- Desafios e projetos: exercícios para praticar lógica e desenvolver o raciocínio.
+- Acompanhamento: o aplicativo salva seu progresso e mostra onde você parou. 
+
+
+## Temas abordados
 
 **Iniciante**
-- Java: variáveis e tipos de dados, tipos primitivos, estruturas de controle, laços, arrays, listas e Map, JVM e IntelliJ.
-- Programação orientada a objetos: classes e objetos, encapsulamento, herança, polimorfismo e abstração.
+- Fundamentos de Java e lógica de programação.
+- Variáveis, tipos de dados, condições, repetições, loops e arrays. 
+- Programação orientada a objetos: classes, objetos, encapsulamento, herança, polimorfismo.
+- Conhecendo a JVM e o IntelliJ IDEA.
 
 **Intermediário**
-- Lógica e estruturas de dados: pilha, fila, busca binária e ordenação, em desafios práticos.
-- Projetos com objetos: conta bancária, pedido com itens e cadastro de clientes.
-- Ecossistema Java: exceções, APIs REST, JSON e DTO, banco de dados, Git e GitHub, arquitetura em camadas (MVC), Spring Boot e JPA, regras de pedidos e entregas, e testes.
-- Java moderno e SQL: streams, lambdas e Optional, JOINs, GROUP BY e relacionamentos no JPA.
+- Estruturas de dados e desafios de lógica. 
+- Projetos práticos com Java.
+- APIs, REST, JSON e DTO, banco de dados, Git e GitHub, arquitetura em camadas (MVC).
+- Spring Boot, JPA e organização de projetos.
+- Testes e conceitos de Java moderno.
 
 **Avançado**
-- Por baixo dos panos: o caminho da URL até a resposta, o que o Spring faz ao iniciar, memória, threads e conexões, e o banco por dentro (transações, índices e locks).
-- Nível profissional: SOLID e padrões de projeto, segurança, desempenho e como medi-lo, e infraestrutura (Docker e CI/CD).
+- Entender o que acontece por trás de uma aplicação.
+- Memória, threads, banco de dados e transações.
+- Boas práticas, arquitetura, segurança e desempenho.
+- Docker e CI/CD.
 
 **Carreira**
-- Como se preparar para a primeira vaga de desenvolvedor e como usar a IA a seu favor.
+- Preparação para as oportunidades como desenvolvedor, e como utilizar a Inteligência artificial como apoio nos estudos e no desenvolvimento.
 
-## Tecnologias usadas
+## O aplicativo foi construído com tecnologias de desenvolvimento web:
 
-| Tecnologia | Para que serve aqui |
 | --- | --- |
-| HTML | Estrutura das telas |
-| CSS | Aparência, modo claro e escuro, layout para celular e computador |
-| JavaScript (puro) | Toda a lógica: trilha, quiz, animações, anotações e revisão |
-| localStorage | Guarda o progresso no navegador do aluno |
-| PWA (manifest + service worker) | Instalar como app e abrir sem internet |
-| Git e GitHub | Histórico das mudanças e publicação |
+| HTML | Estrutura das páginas |
+| CSS | Aparência, cores e adaptação para celular e computador |
+| JavaScript (puro) | funcionamento das aulas, quizzes, anotações e revisão |
+| localStorage | armazenamento do progresso e das anotações no próprio navegador |
+| PWA | permite instalar utilizar alguns recursos mesmo sem internet |
+| Git e GitHub | controle das alterações e publicação do projeto |
 
-> O conteúdo de estudo foi escrito com apoio de IA e passou por revisão, mas pode conter imprecisões. Em caso de dúvida, confirme na documentação oficial.
+> O conteúdo foi criado com apoio de Inteligência artificial, e revisado durante a construção do projeto. Mesmo assim, algumas informações podem precisar de ajustes.

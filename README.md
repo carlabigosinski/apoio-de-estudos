@@ -21,12 +21,13 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 
 ## No projeto/aplicativo, como serão os estudos?
 
-- Trilha de estudos: 48 aulas organizadas em uma sequência, do básico ao avançado.
+- Trilha de estudos: 56 aulas organizadas em uma sequência, do básico ao avançado.
 - Explicações e exemplos: conteúdos em linguagem simples, com exemplos de código para facilitar o entendimento.
 - Leitura de código linha por linha: nos desafios e projetos, cada linha do código vem com uma explicação de como lê-la e interpretá-la em voz alta, usando os nomes reais de cada coisa (método, parâmetro, lista, `if`, `for`, `JOIN`...). Ajuda a entender o que o algoritmo faz passo a passo, sem decorar.
-- Quizzes: mais de 460 perguntas para testar o que você aprendeu.
+- Quizzes: mais de 500 perguntas para testar o que você aprendeu.
 - Anotações: espaço para escrever o que entendeu com suas próprias palavras.
 - Desafios e projetos: exercícios para praticar lógica e desenvolver o raciocínio.
+- Pensar como dev, do problema à decisão: trilha para treinar o que as empresas avaliam em um teste técnico. Entender o problema, ler um projeto que você não escreveu, diagnosticar melhorias, decidir entre opções, comandar a IA com o raciocínio de negócio e explicar com termos técnicos como pensou e por que escolheu aquele caminho.
 - Acompanhamento: o aplicativo salva seu progresso e mostra onde você parou.
 
 
@@ -53,6 +54,7 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 
 **Carreira**
 - Preparação para oportunidades como desenvolvedora e uso da inteligência artificial como apoio nos estudos e no desenvolvimento.
+- Raciocínio de negócio: entender o problema, avaliar opções, decidir e explicar a decisão, como em um teste técnico.
 
 ## Tecnologias utilizadas
 

@@ -53,8 +53,8 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 - Docker e CI/CD.
 
 **Carreira**
-- Preparação para oportunidades como desenvolvedora e uso da inteligência artificial como apoio nos estudos e no desenvolvimento.
-- Raciocínio de negócio: entender o problema, avaliar opções, decidir e explicar a decisão, como em um teste técnico.
+- Trilha "Pensar como dev": treino para testes técnicos, do problema à decisão. Entender o problema, ler o código de outra pessoa, comparar opções e explicar a escolha com termos técnicos.
+- Uso da inteligência artificial como apoio nos estudos e no desenvolvimento.
 
 ## Tecnologias utilizadas
 

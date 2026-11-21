@@ -52,9 +52,17 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 - Boas práticas, arquitetura, segurança e desempenho.
 - Docker e CI/CD.
 
+**Pensar como dev, do problema à decisão**
+- Entender o problema antes de programar.
+- Ler um projeto que você não escreveu.
+- Diagnosticar melhorias.
+- Decidir entre opções e justificar a escolha.
+- Comandar a IA com o raciocínio de negócio.
+- Explicar com termos técnicos como pensou e por que escolheu aquele caminho.
+
 **Carreira**
-- Trilha "Pensar como dev": treino para testes técnicos, do problema à decisão. Entender o problema, ler o código de outra pessoa, comparar opções e explicar a escolha com termos técnicos.
-- Uso da inteligência artificial como apoio nos estudos e no desenvolvimento.
+- Preparação para oportunidades como desenvolvedora e uso da inteligência artificial como apoio nos estudos e no desenvolvimento.
+- Raciocínio de negócio: entender o problema, avaliar opções, decidir e explicar a decisão, como em um teste técnico.
 
 ## Tecnologias utilizadas
 

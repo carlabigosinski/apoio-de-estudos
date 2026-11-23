@@ -1017,7 +1017,8 @@ FLOWS.test = { titulo: "As 3 partes de um teste (AAA)", nos: [["Preparar", "Arra
     [0, "<b>Arrange</b> (preparar): crie os objetos e dados que o teste precisa."],
     [1, "<b>Act</b> (executar): chame o método que está sendo testado."],
     [2, "<b>Assert</b> (conferir): compare o resultado com o que você esperava."],
-    [3, "<b>Verde</b>: passou. <b>Vermelho</b>: falhou, e você achou um bug antes do usuário.", "erro"] ] };
+    [3, "<b>Verde</b>: passou. No exemplo do frete expresso, <b>calcular(2.0)</b> devolve 10.0 e o teste esperava 10.0. Os dois valores batem, então o teste passa: o código faz o que deveria e não há nada a corrigir."],
+    [3, "<b>Vermelho</b>: falhou. Se alguém trocar a conta para <b>peso * 4</b>, <b>calcular(2.0)</b> devolve 8.0, mas o teste esperava 10.0. O JUnit avisa: <b>expected: 10.0 but was: 8.0</b>. Você achou o bug antes do usuário e sabe onde olhar: na conta do frete.", "erro"] ] };
 FLOWS.seg = { titulo: "Login com token", nos: [["Usuário", "e-mail e senha"], ["Servidor", "confere o hash"], ["Token JWT", "crachá digital"], ["Pedido", "envia o token"], ["Servidor", "valida e libera"]],
   passos: [
     [0, "O usuário envia e-mail e senha (sempre por <b>HTTPS</b>, a conexão com criptografia)."],

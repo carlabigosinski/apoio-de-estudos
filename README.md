@@ -69,6 +69,11 @@ No final, aprendi não só sobre programação, mas também sobre como transform
 
 ## O que foi atualizado
 
+- **Quiz difícil de chutar:** as alternativas das 524 perguntas foram revisadas para a certa não se entregar pelo tamanho. Ela passou de ser a mais longa em 69% das perguntas para 24%.
+- **Consultar antes de responder:** no modo treino, um botão mostra a dica, os pontos-chave e os termos da aula.
+- **Escrever a resposta:** opção de responder com as próprias palavras, sem ver as alternativas. A correção é automática, por palavras-chave (não é IA) e pode errar, por isso há um botão para contestar.
+- **Voltar à aula:** depois de treinar o que errou no quiz de uma aula, o botão "Voltar à aula e anotar" continua na tela de resultado.
+- **Correções:** voltar do resultado não conta a mesma rodada duas vezes, e tipos como `<String>` voltaram a aparecer nas perguntas.
 - **Backup do progresso:** exportar e importar em arquivo JSON, com migração de versão que preserva seus dados. Importar pede confirmação e recusa arquivo inválido.
 - **Revisão técnica do conteúdo:** exemplos de código que agora compilam, fatos corrigidos (LAZY, CORS, índice, `binarySearch`, BCrypt e outros), configurações que não vazam senha e textos mais claros nas aulas, na leitura linha por linha e no quiz.
 - **Quiz:** agora com 524 perguntas. Entraram perguntas de achar o bug, completar a lacuna e de entrevista júnior (`equals`, `==` com texto, `finally`, `@Transactional`, SQL Injection, entre outras). Perguntas repetidas foram trocadas por perguntas novas.
